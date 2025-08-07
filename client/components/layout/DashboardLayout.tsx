@@ -52,13 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
-  const filteredNavigation = navigationItems.filter(item => {
-    // Show admin-only items only to admins
-    if (item.name === 'Preset Prompts' && user?.role !== 'Admin') {
-      return false;
-    }
-    return true;
-  });
+  const navigationItems = user?.role === 'Admin' ? adminNavigationItems : userNavigationItems;
 
   return (
     <div className="h-screen flex bg-gray-50">
