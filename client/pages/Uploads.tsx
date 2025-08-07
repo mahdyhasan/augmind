@@ -35,6 +35,9 @@ import {
   Search,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { supabase, Document } from "../lib/supabase";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Textarea } from "../components/ui/textarea";
 
 interface UploadedFile {
   id: string;
