@@ -62,10 +62,7 @@ function AppRoutes() {
       <Route path="/uploads" element={
         <ProtectedRoute>
           <DashboardLayout>
-            <PlaceholderPage 
-              title="Document Uploads" 
-              description="Upload and manage your documents for AI analysis. Support for PDFs, text files, and markdown documents."
-            />
+            <Uploads />
           </DashboardLayout>
         </ProtectedRoute>
       } />
