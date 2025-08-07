@@ -112,14 +112,16 @@ export default function AdminPanel() {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
-        console.error("Database connection test failed:", error);
+        const errorMsg = error?.message || error?.toString() || 'Unknown database error';
+        console.error("Database connection test failed:", errorMsg);
         return false;
       } else {
         console.log("Database connection successful, user count:", data);
         return true;
       }
     } catch (error: any) {
-      console.error("Database connection test error:", error);
+      const errorMsg = error?.message || error?.toString() || 'Unknown connection error';
+      console.error("Database connection test error:", errorMsg);
       return false;
     }
   };
