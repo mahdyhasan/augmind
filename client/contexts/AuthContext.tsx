@@ -90,11 +90,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log('AuthProvider: Fetching profile for user:', authUser.email);
 
     try {
-      const { data: profile, error } = await supabase
+      // Add timeout to the query
+      const profilePromise = supabase
         .from('user_profiles')
         .select('*')
         .eq('id', authUser.id)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+
+      const { data: profile, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Error fetching user profile:', error.message, error);
