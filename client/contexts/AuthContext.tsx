@@ -287,8 +287,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Create auth user
-      const { data, error: authError } = await supabase.auth.signUp({
+      console.log("Signup: Starting signup process for:", email);
+
+      // Add timeout for signup requests
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Signup request timeout')), 10000)
+      );
+
+      const signupPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -299,39 +305,74 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       });
 
+      const { data, error: authError } = await Promise.race([signupPromise, timeoutPromise]) as any;
+
       if (authError) {
+        console.error("Signup: Auth error:", authError.message);
         return { success: false, error: authError.message };
       }
 
       if (data.user) {
         console.log("Auth user created successfully");
 
-        // Create user profile
-        const { error: profileError } = await supabase
-          .from("user_profiles")
-          .insert({
-            id: data.user.id,
-            username: userData.username,
-            full_name: userData.full_name,
-            role: userData.role || "Business Dev User",
-          });
-
-        if (profileError) {
-          console.error(
-            "Error creating user profile:",
-            profileError.message,
-            profileError,
+        try {
+          // Create user profile with timeout
+          const profileTimeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Profile creation timeout')), 8000)
           );
+
+          const profilePromise = supabase
+            .from("user_profiles")
+            .insert({
+              id: data.user.id,
+              username: userData.username,
+              full_name: userData.full_name,
+              role: userData.role || "Business Dev User",
+            });
+
+          const { error: profileError } = await Promise.race([profilePromise, profileTimeoutPromise]) as any;
+
+          if (profileError) {
+            console.error("Error creating user profile:", profileError.message);
+            // Auth user was created but profile failed - still return success
+            // The profile will be created on next login attempt
+            return {
+              success: true,
+              error: "Account created successfully, but profile setup incomplete. You can still log in."
+            };
+          } else {
+            console.log("User profile created successfully");
+          }
+        } catch (profileError: any) {
+          console.error("Profile creation failed:", profileError.message);
           // Auth user was created but profile failed - still return success
-          // The profile will be created on next login attempt
-        } else {
-          console.log("User profile created successfully");
+          return {
+            success: true,
+            error: "Account created successfully, but profile setup incomplete. You can still log in."
+          };
         }
       }
 
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message };
+      console.error("Signup: Exception during signup:", error);
+
+      // Handle specific fetch errors
+      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+        return {
+          success: false,
+          error: "Network connection failed. Please check your internet connection and try again."
+        };
+      }
+
+      if (error.message.includes("fetch") || error.message.includes("timeout") || error.message.includes("connection")) {
+        return {
+          success: false,
+          error: "Unable to connect to authentication service. Please try again later."
+        };
+      }
+
+      return { success: false, error: error.message || "An unexpected error occurred during signup." };
     }
   };
 
