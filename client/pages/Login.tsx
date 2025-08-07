@@ -205,6 +205,10 @@ export default function Login() {
 
           </CardContent>
         </Card>
+
+        <div className="mt-6">
+          <DatabaseStatus />
+        </div>
       </div>
     </div>
   );
