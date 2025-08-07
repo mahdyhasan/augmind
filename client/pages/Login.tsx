@@ -12,6 +12,7 @@ import {
 } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Brain } from "lucide-react";
+import { DatabaseStatus } from "../components/DatabaseStatus";
 
 export default function Login() {
   const [email, setEmail] = useState("");
