@@ -149,7 +149,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
               <h2 className="text-lg font-semibold text-gray-900">
-                {navigationItems.find(item => item.href === location.pathname)?.name || 'Dashboard'}
+                {[...adminNavigationItems, ...userNavigationItems].find(item => item.href === location.pathname)?.name || 'Dashboard'}
               </h2>
             </div>
             
