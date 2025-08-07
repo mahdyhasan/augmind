@@ -206,29 +206,31 @@ export default function AIChat() {
     setIsLoading(true);
 
     try {
-      // Save user message to database
-      const { data: userMessageData, error: userMessageError } = await supabase
-        .from("messages")
-        .insert({
-          conversation_id: currentConversation.id,
-          sender: "user",
-          content: userMessage.content,
-          tokens_used: Math.ceil(userMessage.content.length / 4), // Rough token estimation
-          words_count: userMessage.content.split(" ").length,
-          preset_question_id: presetQuestionId,
-        })
-        .select()
-        .single();
+      // Only save to database if connected
+      if (connectionStatus === "connected" && currentConversation) {
+        const { data: userMessageData, error: userMessageError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: currentConversation.id,
+            sender: "user",
+            content: userMessage.content,
+            tokens_used: Math.ceil(userMessage.content.length / 4), // Rough token estimation
+            words_count: userMessage.content.split(" ").length,
+            preset_question_id: presetQuestionId,
+          })
+          .select()
+          .single();
 
-      if (userMessageError) {
-        console.error("Error saving user message:", userMessageError);
-      }
+        if (userMessageError) {
+          console.error("Error saving user message:", userMessageError);
+        }
 
-      // Update preset question usage count if applicable
-      if (presetQuestionId) {
-        await supabase.rpc("increment_preset_question_usage", {
-          question_id: presetQuestionId,
-        });
+        // Update preset question usage count if applicable
+        if (presetQuestionId) {
+          await supabase.rpc("increment_preset_question_usage", {
+            question_id: presetQuestionId,
+          });
+        }
       }
 
       // Simulate AI response (in real app, this would call OpenAI API)
