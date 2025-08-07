@@ -201,9 +201,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
 
         if (profileError) {
-          console.error('Error creating user profile:', profileError);
+          console.error('Error creating user profile:', profileError.message, profileError);
           // Auth user was created but profile failed - still return success
           // The profile will be created on next login attempt
+        } else {
+          console.log('User profile created successfully');
         }
       }
 
