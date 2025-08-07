@@ -156,10 +156,8 @@ export default function AdminPanel() {
 
       initializeAdminPanel().catch((error) => {
         console.error("Failed to initialize admin panel:", error);
-        setMessage("Demo mode: Initialization failed, using demo data");
-        setMessageType("success");
-        loadDemoUsers();
-        loadDemoSystemSettings();
+        setMessage("Initialization failed: " + error.message);
+        setMessageType("error");
       });
     }
   }, [user]);
