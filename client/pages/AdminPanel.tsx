@@ -100,14 +100,19 @@ export default function AdminPanel() {
   const testDatabaseConnection = async () => {
     try {
       console.log("Testing database connection...");
-      const { data, error } = await supabase
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection test timeout')), 3000)
+      );
+
+      const queryPromise = supabase
         .from("user_profiles")
         .select("count", { count: "exact", head: true });
 
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+
       if (error) {
         console.error("Database connection test failed:", error);
-        setMessage("Database connection failed: " + error.message);
-        setMessageType("error");
         return false;
       } else {
         console.log("Database connection successful, user count:", data);
@@ -115,8 +120,6 @@ export default function AdminPanel() {
       }
     } catch (error: any) {
       console.error("Database connection test error:", error);
-      setMessage("Database connection error: " + error.message);
-      setMessageType("error");
       return false;
     }
   };
@@ -124,10 +127,21 @@ export default function AdminPanel() {
   useEffect(() => {
     if (user?.role === "Admin") {
       const initializeAdminPanel = async () => {
+        console.log("Initializing admin panel...");
         const isConnected = await testDatabaseConnection();
+
         if (isConnected) {
+          console.log("Database connected, loading real data");
+          setMessage("Connected to database successfully");
+          setMessageType("success");
           loadUsers();
           loadSystemSettings();
+        } else {
+          console.log("Database not connected, switching to demo mode");
+          setMessage("Demo mode: Using demo data (database not accessible)");
+          setMessageType("success");
+          loadDemoUsers();
+          loadDemoSystemSettings();
         }
       };
       initializeAdminPanel();
