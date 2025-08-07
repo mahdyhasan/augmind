@@ -84,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       .catch((error) => {
         console.error("AuthProvider: Error getting session:", error);
+        console.log("AuthProvider: Continuing with no session due to network issues");
         clearTimeout(loadingTimeout);
         setLoading(false);
       });
