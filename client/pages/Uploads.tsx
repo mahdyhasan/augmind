@@ -33,6 +33,7 @@ import {
   XCircle,
   Clock,
   Search,
+  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase, Document } from "../lib/supabase";
