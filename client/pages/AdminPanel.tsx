@@ -665,6 +665,9 @@ export default function AdminPanel() {
           <p className="text-gray-600">
             Manage users, API keys, and system settings
           </p>
+          <div className="mt-2">
+            <DataStatusIndicator />
+          </div>
         </div>
         <Button
           variant="outline"
