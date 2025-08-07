@@ -318,7 +318,8 @@ export default function AdminPanel() {
         }
       }
     } catch (error: any) {
-      console.error("Error in loadSystemSettings:", error);
+      const errorMsg = error?.message || error?.toString() || 'Network error';
+      console.error("Error in loadSystemSettings:", errorMsg);
       console.log("Network error, switching to demo data for system settings");
       loadDemoSystemSettings();
     } finally {
