@@ -43,9 +43,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     console.log('AuthProvider: Initializing...');
 
+    // Safety timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.log('AuthProvider: Loading timeout reached, forcing loading to false');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('AuthProvider: Initial session:', session?.user?.email);
+      clearTimeout(loadingTimeout);
       setSession(session);
       if (session?.user) {
         fetchUserProfile(session.user);
@@ -55,6 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }).catch(error => {
       console.error('AuthProvider: Error getting session:', error);
+      clearTimeout(loadingTimeout);
       setLoading(false);
     });
 
@@ -72,7 +80,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (authUser: User) => {
