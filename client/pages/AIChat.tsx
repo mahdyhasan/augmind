@@ -10,7 +10,9 @@ import {
 } from "../components/ui/card";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
-import { Send, Bot, User, Lightbulb } from "lucide-react";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Badge } from "../components/ui/badge";
+import { Send, Bot, User, Lightbulb, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import {
   supabase,
