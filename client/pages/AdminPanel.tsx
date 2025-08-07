@@ -83,6 +83,23 @@ export default function AdminPanel() {
     word_limit: 1000,
   });
 
+  // Edit User State
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Confirmation Dialog State
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
   // System Settings State
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     default_user_tokens: 5000,
