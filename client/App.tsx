@@ -119,10 +119,7 @@ function AppRoutes() {
       <Route path="/client-prospect" element={
         <ProtectedRoute>
           <DashboardLayout>
-            <PlaceholderPage 
-              title="Client Prospect Assist" 
-              description="Get AI-powered strategies for prospecting and engaging with potential clients."
-            />
+            <ClientProspect />
           </DashboardLayout>
         </ProtectedRoute>
       } />
