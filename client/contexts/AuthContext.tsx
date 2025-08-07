@@ -207,7 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return {
           success: false,
           error:
-            "Network connection failed. Please check your internet connection and try again.",
+            "Unable to connect to the authentication service. Please check your internet connection and verify the database configuration.",
         };
       }
 
@@ -219,7 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return {
           success: false,
           error:
-            "Unable to connect to authentication service. Please try again later.",
+            "Authentication service unavailable. Please verify your database configuration or try again later.",
         };
       }
 
