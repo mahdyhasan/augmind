@@ -848,14 +848,21 @@ export default function AdminPanel() {
                         </p>
                       </div>
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(userProfile)}
+                          disabled={loading}
+                          title="Edit user"
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteUser(userProfile.id)}
+                          onClick={() => showDeleteConfirmation(userProfile)}
                           disabled={userProfile.username === "admin" || loading}
+                          title="Delete user"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
