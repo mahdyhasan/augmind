@@ -77,14 +77,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) {
         console.error('Error fetching user profile:', error.message, error);
-        // If no profile exists, this might be a newly created user
-        setUser({
-          id: authUser.id,
-          username: authUser.email?.split('@')[0] || 'user',
-          role: 'Business Dev User',
-          name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-          email: authUser.email || '',
-        });
+
+        // If profile doesn't exist (PGRST116 error), create one
+        if (error.code === 'PGRST116') {
+          console.log('Creating user profile for new user...');
+
+          const newProfile = {
+            id: authUser.id,
+            username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'user',
+            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            role: 'Business Dev User' as const,
+          };
+
+          const { data: createdProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert(newProfile)
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Error creating user profile:', createError);
+            // Fall back to basic user object
+            setUser({
+              id: authUser.id,
+              username: newProfile.username,
+              role: newProfile.role,
+              name: newProfile.full_name,
+              email: authUser.email || '',
+            });
+          } else {
+            setUser({
+              id: createdProfile.id,
+              username: createdProfile.username,
+              role: createdProfile.role,
+              name: createdProfile.full_name,
+              email: authUser.email || '',
+              profile: createdProfile,
+            });
+          }
+        } else {
+          // Other error, create basic user object
+          setUser({
+            id: authUser.id,
+            username: authUser.email?.split('@')[0] || 'user',
+            role: 'Business Dev User',
+            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            email: authUser.email || '',
+          });
+        }
       } else {
         setUser({
           id: profile.id,
@@ -97,6 +137,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
+      // Create basic user object as fallback
+      setUser({
+        id: authUser.id,
+        username: authUser.email?.split('@')[0] || 'user',
+        role: 'Business Dev User',
+        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+        email: authUser.email || '',
+      });
     } finally {
       setLoading(false);
     }
