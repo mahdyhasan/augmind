@@ -50,10 +50,7 @@ function AppRoutes() {
       <Route path="/chat" element={
         <ProtectedRoute>
           <DashboardLayout>
-            <PlaceholderPage 
-              title="AI Chat" 
-              description="Start conversations with your AI strategic assistant. This will be the core interface for getting insights and recommendations."
-            />
+            <AIChat />
           </DashboardLayout>
         </ProtectedRoute>
       } />
