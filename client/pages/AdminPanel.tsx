@@ -137,32 +137,20 @@ export default function AdminPanel() {
       const initializeAdminPanel = async () => {
         console.log("Initializing admin panel for user:", user?.email);
 
-        // If user is already in demo mode (has demo in ID), skip connection test
-        if (user?.id?.includes("demo")) {
-          console.log("User is in demo mode, loading demo data directly");
-          setMessage("Demo mode: Using demo data");
-          setMessageType("success");
-          loadDemoUsers();
-          loadDemoSystemSettings();
-          return;
-        }
-
-        // Test database connection for real users
+        // Test database connection
         console.log("Testing database connection...");
         const isConnected = await testDatabaseConnection();
 
         if (isConnected) {
-          console.log("Database connected, loading real data");
+          console.log("Database connected, loading data");
           setMessage("Connected to database successfully");
           setMessageType("success");
           loadUsers();
           loadSystemSettings();
         } else {
-          console.log("Database not connected, switching to demo mode");
-          setMessage("Demo mode: Database not accessible, using demo data");
-          setMessageType("success");
-          loadDemoUsers();
-          loadDemoSystemSettings();
+          console.log("Database connection failed");
+          setMessage("Database connection failed. Please check your configuration.");
+          setMessageType("error");
         }
       };
 
