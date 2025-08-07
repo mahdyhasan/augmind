@@ -96,10 +96,41 @@ export default function AdminPanel() {
 
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({});
 
+  // Test database connectivity
+  const testDatabaseConnection = async () => {
+    try {
+      console.log("Testing database connection...");
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("count", { count: "exact", head: true });
+
+      if (error) {
+        console.error("Database connection test failed:", error);
+        setMessage("Database connection failed: " + error.message);
+        setMessageType("error");
+        return false;
+      } else {
+        console.log("Database connection successful, user count:", data);
+        return true;
+      }
+    } catch (error: any) {
+      console.error("Database connection test error:", error);
+      setMessage("Database connection error: " + error.message);
+      setMessageType("error");
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user?.role === "Admin") {
-      loadUsers();
-      loadSystemSettings();
+      const initializeAdminPanel = async () => {
+        const isConnected = await testDatabaseConnection();
+        if (isConnected) {
+          loadUsers();
+          loadSystemSettings();
+        }
+      };
+      initializeAdminPanel();
     }
   }, [user]);
 
