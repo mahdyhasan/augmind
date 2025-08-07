@@ -167,6 +167,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       if (data.user) {
+        console.log('Auth user created successfully');
+        // TODO: Re-enable profile creation once database connection is stable
+        /*
         // Create user profile
         const { error: profileError } = await supabase
           .from('user_profiles')
@@ -179,11 +182,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         if (profileError) {
           console.error('Error creating user profile:', profileError.message, profileError);
-          // Auth user was created but profile failed - still return success
-          // The profile will be created on next login attempt
         } else {
           console.log('User profile created successfully');
         }
+        */
       }
 
       return { success: true };
