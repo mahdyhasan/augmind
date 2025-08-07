@@ -268,8 +268,8 @@ export default function AdminPanel() {
     } catch (error: any) {
       const errorMsg = error?.message || error?.toString() || "Network error";
       console.error("Error in loadSystemSettings:", errorMsg);
-      console.log("Network error, switching to demo data for system settings");
-      loadDemoSystemSettings();
+      setMessage("Network error loading system settings: " + errorMsg);
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
