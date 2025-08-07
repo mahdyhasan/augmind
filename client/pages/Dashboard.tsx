@@ -140,20 +140,30 @@ export default function Dashboard() {
       // Fetch preset questions count (admin only)
       let presetQuestionsCount = 0;
       if (user.role === 'Admin') {
-        const { count } = await supabase
+        console.log('Dashboard: Fetching preset questions count...');
+        const { count, error: presetsError } = await supabase
           .from('preset_questions')
           .select('*', { count: 'exact', head: true });
-        presetQuestionsCount = count || 0;
+
+        if (presetsError) {
+          console.error('Dashboard: Error fetching preset questions:', presetsError);
+        } else {
+          console.log('Dashboard: Preset questions count:', count);
+          presetQuestionsCount = count || 0;
+        }
       }
 
-      setStats({
+      const finalStats = {
         conversations: conversationsCount || 0,
         documents: documentsCount || 0,
         prospects: prospectsCount || 0,
         totalTokens,
         totalRequests,
         presetQuestions: presetQuestionsCount,
-      });
+      };
+
+      console.log('Dashboard: Final stats:', finalStats);
+      setStats(finalStats);
 
       // Fetch recent activity
       const { data: recentMessages } = await supabase
