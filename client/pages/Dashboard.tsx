@@ -53,48 +53,87 @@ export default function Dashboard() {
   }, [user]);
 
   const fetchDashboardData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('Dashboard: No user found');
+      return;
+    }
 
     try {
+      console.log('Dashboard: Fetching data for user:', user.email, 'ID:', user.id);
       setLoading(true);
 
       // Fetch conversations count
-      const { count: conversationsCount } = await supabase
+      console.log('Dashboard: Fetching conversations...');
+      const { count: conversationsCount, error: conversationsError } = await supabase
         .from('conversations')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
+      if (conversationsError) {
+        console.error('Dashboard: Error fetching conversations:', conversationsError);
+      } else {
+        console.log('Dashboard: Conversations count:', conversationsCount);
+      }
+
       // Fetch documents count (admin sees all, users see their own)
+      console.log('Dashboard: Fetching documents...');
       const documentsQuery = supabase
         .from('documents')
         .select('*', { count: 'exact', head: true });
-      
+
       if (user.role !== 'Admin') {
         documentsQuery.eq('uploaded_by', user.id);
       }
-      const { count: documentsCount } = await documentsQuery;
+      const { count: documentsCount, error: documentsError } = await documentsQuery;
+
+      if (documentsError) {
+        console.error('Dashboard: Error fetching documents:', documentsError);
+      } else {
+        console.log('Dashboard: Documents count:', documentsCount);
+      }
 
       // Fetch client prospects count
-      const { count: prospectsCount } = await supabase
+      console.log('Dashboard: Fetching prospects...');
+      const { count: prospectsCount, error: prospectsError } = await supabase
         .from('client_prospects')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
+      if (prospectsError) {
+        console.error('Dashboard: Error fetching prospects:', prospectsError);
+      } else {
+        console.log('Dashboard: Prospects count:', prospectsCount);
+      }
+
       // Fetch usage analytics for tokens and requests
-      const { data: analytics } = await supabase
+      console.log('Dashboard: Fetching analytics...');
+      const { data: analytics, error: analyticsError } = await supabase
         .from('usage_analytics')
         .select('tokens_consumed')
         .eq('user_id', user.id);
 
+      if (analyticsError) {
+        console.error('Dashboard: Error fetching analytics:', analyticsError);
+      } else {
+        console.log('Dashboard: Analytics data:', analytics);
+      }
+
       const totalTokens = analytics?.reduce((sum, item) => sum + (item.tokens_consumed || 0), 0) || 0;
 
       // Fetch daily summary for requests
-      const { data: dailySummary } = await supabase
+      console.log('Dashboard: Fetching daily summary...');
+      const { data: dailySummary, error: dailyError } = await supabase
         .from('daily_usage_summary')
         .select('total_requests')
         .eq('user_id', user.id)
         .order('date', { ascending: false })
         .limit(7);
+
+      if (dailyError) {
+        console.error('Dashboard: Error fetching daily summary:', dailyError);
+      } else {
+        console.log('Dashboard: Daily summary data:', dailySummary);
+      }
 
       const totalRequests = dailySummary?.reduce((sum, item) => sum + (item.total_requests || 0), 0) || 0;
 
