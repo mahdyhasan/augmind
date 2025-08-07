@@ -249,23 +249,25 @@ export default function AIChat() {
         setMessages((prev) => [...prev, aiMessage]);
         setIsLoading(false);
 
-        // Save AI message to database
-        await supabase.from("messages").insert({
-          conversation_id: currentConversation.id,
-          sender: "ai",
-          content: aiMessage.content,
-          tokens_used: aiMessage.tokens_used || 0,
-          words_count: aiMessage.words_count || 0,
-        });
-
-        // Update user usage stats
-        if (user.profile?.id) {
-          await supabase.rpc("update_user_usage", {
-            user_uuid: user.profile.id,
-            tokens:
-              userMessage.content.length / 4 + (aiMessage.tokens_used || 0),
-            words: aiMessage.words_count || 0,
+        // Save AI message to database only if connected
+        if (connectionStatus === "connected" && currentConversation) {
+          await supabase.from("messages").insert({
+            conversation_id: currentConversation.id,
+            sender: "ai",
+            content: aiMessage.content,
+            tokens_used: aiMessage.tokens_used || 0,
+            words_count: aiMessage.words_count || 0,
           });
+
+          // Update user usage stats
+          if (user.profile?.id) {
+            await supabase.rpc("update_user_usage", {
+              user_uuid: user.profile.id,
+              tokens:
+                userMessage.content.length / 4 + (aiMessage.tokens_used || 0),
+              words: aiMessage.words_count || 0,
+            });
+          }
         }
       }, 1500);
     } catch (error) {
