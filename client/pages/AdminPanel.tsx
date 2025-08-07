@@ -106,10 +106,19 @@ export default function AdminPanel() {
   const loadUsers = async () => {
     try {
       console.log("Loading users...");
-      const { data, error } = await supabase
+      setLoading(true);
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+
+      const queryPromise = supabase
         .from("user_profiles")
         .select("*")
         .order("created_at", { ascending: false });
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error("Error loading users:", error);
@@ -121,21 +130,35 @@ export default function AdminPanel() {
         if (data && data.length > 0) {
           setMessage(`Loaded ${data.length} users successfully`);
           setMessageType("success");
+        } else {
+          setMessage("No users found in database");
+          setMessageType("success");
         }
       }
     } catch (error: any) {
       console.error("Error in loadUsers:", error);
       setMessage("Error loading users: " + error.message);
       setMessageType("error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadSystemSettings = async () => {
     try {
       console.log("Loading system settings...");
-      const { data, error } = await supabase
+      setLoading(true);
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Settings request timeout')), 10000)
+      );
+
+      const queryPromise = supabase
         .from("system_settings")
         .select("setting_key, setting_value");
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error("Error loading system settings:", error);
@@ -158,11 +181,21 @@ export default function AdminPanel() {
         });
         console.log("Parsed settings:", settings);
         setSystemSettings((prev) => ({ ...prev, ...settings }));
+
+        if (data && data.length > 0) {
+          setMessage(`Loaded ${data.length} system settings`);
+          setMessageType("success");
+        } else {
+          setMessage("No system settings found - using defaults");
+          setMessageType("success");
+        }
       }
     } catch (error: any) {
       console.error("Error in loadSystemSettings:", error);
       setMessage("Error loading system settings: " + error.message);
       setMessageType("error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -313,32 +346,49 @@ export default function AdminPanel() {
         { key: "anthropic_api_key", value: systemSettings.anthropic_api_key },
       ];
 
+      let successCount = 0;
       for (const update of updates) {
         console.log(`Updating ${update.key} with value:`, update.value);
 
-        const { error } = await supabase.from("system_settings").upsert(
-          {
-            setting_key: update.key,
-            setting_value: JSON.stringify(update.value),
-            description: `System setting for ${update.key}`,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "setting_key",
-          },
-        );
+        try {
+          // Add timeout to each upsert operation
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Timeout updating ${update.key}`)), 8000)
+          );
 
-        if (error) {
-          console.error(`Error updating ${update.key}:`, error);
+          const upsertPromise = supabase.from("system_settings").upsert(
+            {
+              setting_key: update.key,
+              setting_value: JSON.stringify(update.value),
+              description: `System setting for ${update.key}`,
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: "setting_key",
+            },
+          );
+
+          const { error } = await Promise.race([upsertPromise, timeoutPromise]) as any;
+
+          if (error) {
+            console.error(`Error updating ${update.key}:`, error);
+            throw error;
+          } else {
+            console.log(`Successfully updated ${update.key}`);
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to update ${update.key}:`, error);
           throw error;
-        } else {
-          console.log(`Successfully updated ${update.key}`);
         }
       }
 
-      console.log("All settings updated successfully");
-      setMessage("System settings updated successfully!");
+      console.log(`All ${successCount} settings updated successfully`);
+      setMessage(`Successfully updated ${successCount} system settings!`);
       setMessageType("success");
+
+      // Reload settings to confirm they were saved
+      setTimeout(() => loadSystemSettings(), 1000);
     } catch (error: any) {
       console.error("Error updating system settings:", error);
       setMessage("Error updating settings: " + error.message);
