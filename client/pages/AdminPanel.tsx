@@ -113,13 +113,17 @@ export default function AdminPanel() {
 
   const loadSystemSettings = async () => {
     try {
+      console.log('Loading system settings...');
       const { data, error } = await supabase
         .from('system_settings')
         .select('setting_key, setting_value');
 
       if (error) {
         console.error('Error loading system settings:', error);
+        setMessage('Error loading system settings: ' + error.message);
+        setMessageType('error');
       } else {
+        console.log('System settings loaded:', data);
         const settings: any = {};
         data?.forEach(item => {
           let value = item.setting_value;
@@ -133,10 +137,13 @@ export default function AdminPanel() {
           }
           settings[item.setting_key] = value;
         });
+        console.log('Parsed settings:', settings);
         setSystemSettings(prev => ({ ...prev, ...settings }));
       }
     } catch (error: any) {
       console.error('Error in loadSystemSettings:', error);
+      setMessage('Error loading system settings: ' + error.message);
+      setMessageType('error');
     }
   };
 
