@@ -27,7 +27,41 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
   },
+  global: {
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        // Add timeout to prevent hanging
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      }).catch(error => {
+        console.error('Supabase fetch error:', error);
+        // Convert network errors to more user-friendly messages
+        if (error.name === 'TimeoutError') {
+          throw new Error('Request timeout - please check your internet connection');
+        }
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Network connection failed - please check your internet connection');
+        }
+        throw error;
+      });
+    },
+  },
 });
+
+// Test connectivity and store status
+export let isSupabaseConnected = true;
+
+export const testSupabaseConnection = async (): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.from('user_profiles').select('count', { count: 'exact', head: true });
+    isSupabaseConnected = !error;
+    return !error;
+  } catch (error) {
+    console.warn('Supabase connection test failed:', error);
+    isSupabaseConnected = false;
+    return false;
+  }
+};
 
 // Database types for TypeScript
 export interface UserProfile {
