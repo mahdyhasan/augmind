@@ -1,198 +1,308 @@
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { Badge } from "../components/ui/badge";
-import { Separator } from "../components/ui/separator";
-import { Textarea } from "../components/ui/textarea";
-import {
-  UserPlus,
-  Key,
-  Gauge,
-  Save,
-  Trash2,
-  Edit,
-  Users,
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
+import { Textarea } from '../components/ui/textarea';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { 
+  UserPlus, 
+  Key, 
+  Gauge, 
+  Save, 
+  Trash2, 
+  Edit, 
+  Users, 
   Settings,
   Eye,
   EyeOff,
-} from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+  RefreshCw
+} from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase, UserProfile } from '../lib/supabase';
 
-interface User {
-  id: string;
-  username: string;
-  name: string;
-  role: "Admin" | "Business Dev User";
-  tokenLimit: number;
-  wordLimit: number;
-  status: "Active" | "Inactive";
-  createdAt: Date;
+interface SystemSettings {
+  default_user_tokens: number;
+  default_user_words: number;
+  max_tokens_per_request: number;
+  max_words_per_response: number;
+  daily_request_limit: number;
+  openai_api_key: string;
+  serper_api_key: string;
+  anthropic_api_key: string;
 }
 
-interface APIKey {
+interface APIKeyDisplay {
   id: string;
   name: string;
   service: string;
   key: string;
-  status: "Active" | "Inactive";
+  status: 'Active' | 'Inactive';
 }
 
 export default function AdminPanel() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState('users');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   // User Management State
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      username: "admin",
-      name: "Administrator",
-      role: "Admin",
-      tokenLimit: 10000,
-      wordLimit: 2000,
-      status: "Active",
-      createdAt: new Date("2024-01-01"),
-    },
-    {
-      id: "2",
-      username: "user1",
-      name: "John Smith",
-      role: "Business Dev User",
-      tokenLimit: 5000,
-      wordLimit: 1000,
-      status: "Active",
-      createdAt: new Date("2024-01-15"),
-    },
-  ]);
-
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [newUser, setNewUser] = useState({
-    username: "",
-    name: "",
-    password: "",
-    role: "Business Dev User" as "Admin" | "Business Dev User",
-    tokenLimit: 5000,
-    wordLimit: 1000,
+    email: '',
+    password: '',
+    username: '',
+    full_name: '',
+    role: 'Business Dev User' as 'Admin' | 'Business Dev User',
+    token_limit: 5000,
+    word_limit: 1000
   });
 
-  // API Keys State
-  const [apiKeys, setApiKeys] = useState<APIKey[]>([
-    {
-      id: "1",
-      name: "OpenAI GPT-4",
-      service: "OpenAI",
-      key: "sk-***************************",
-      status: "Active",
-    },
-    {
-      id: "2",
-      name: "Serper Search API",
-      service: "Serper",
-      key: "***************************",
-      status: "Active",
-    },
-  ]);
-
-  const [newApiKey, setNewApiKey] = useState({
-    name: "",
-    service: "",
-    key: "",
+  // System Settings State
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
+    default_user_tokens: 5000,
+    default_user_words: 1000,
+    max_tokens_per_request: 2000,
+    max_words_per_response: 500,
+    daily_request_limit: 100,
+    openai_api_key: '',
+    serper_api_key: '',
+    anthropic_api_key: ''
   });
 
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({});
 
-  // System Limits State
-  const [systemLimits, setSystemLimits] = useState({
-    defaultUserTokens: 5000,
-    defaultUserWords: 1000,
-    maxTokensPerRequest: 2000,
-    maxWordsPerResponse: 500,
-    dailyRequestLimit: 100,
-  });
+  useEffect(() => {
+    if (user?.role === 'Admin') {
+      loadUsers();
+      loadSystemSettings();
+    }
+  }, [user]);
 
-  const handleCreateUser = () => {
-    if (!newUser.username || !newUser.name || !newUser.password) return;
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const user: User = {
-      id: Date.now().toString(),
-      username: newUser.username,
-      name: newUser.name,
-      role: newUser.role,
-      tokenLimit: newUser.tokenLimit,
-      wordLimit: newUser.wordLimit,
-      status: "Active",
-      createdAt: new Date(),
-    };
-
-    setUsers([...users, user]);
-    setNewUser({
-      username: "",
-      name: "",
-      password: "",
-      role: "Business Dev User",
-      tokenLimit: 5000,
-      wordLimit: 1000,
-    });
+      if (error) {
+        console.error('Error loading users:', error);
+        setMessage('Error loading users: ' + error.message);
+        setMessageType('error');
+      } else {
+        setUsers(data || []);
+      }
+    } catch (error: any) {
+      console.error('Error in loadUsers:', error);
+      setMessage('Error loading users: ' + error.message);
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId));
+  const loadSystemSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('setting_key, setting_value');
+
+      if (error) {
+        console.error('Error loading system settings:', error);
+      } else {
+        const settings: any = {};
+        data?.forEach(item => {
+          let value = item.setting_value;
+          // Parse JSON values, handle numbers
+          if (typeof value === 'string') {
+            try {
+              value = JSON.parse(value);
+            } catch (e) {
+              // Keep as string if not JSON
+            }
+          }
+          settings[item.setting_key] = value;
+        });
+        setSystemSettings(prev => ({ ...prev, ...settings }));
+      }
+    } catch (error: any) {
+      console.error('Error in loadSystemSettings:', error);
+    }
   };
 
-  const handleCreateApiKey = () => {
-    if (!newApiKey.name || !newApiKey.service || !newApiKey.key) return;
+  const handleCreateUser = async () => {
+    if (!newUser.email || !newUser.password || !newUser.username || !newUser.full_name) {
+      setMessage('Please fill in all required fields');
+      setMessageType('error');
+      return;
+    }
 
-    const apiKey: APIKey = {
-      id: Date.now().toString(),
-      name: newApiKey.name,
-      service: newApiKey.service,
-      key: newApiKey.key,
-      status: "Active",
-    };
+    try {
+      setLoading(true);
+      setMessage('');
 
-    setApiKeys([...apiKeys, apiKey]);
-    setNewApiKey({ name: "", service: "", key: "" });
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            username: newUser.username,
+            full_name: newUser.full_name,
+          },
+        },
+      });
+
+      if (authError) {
+        setMessage('Error creating user: ' + authError.message);
+        setMessageType('error');
+        return;
+      }
+
+      if (authData.user) {
+        // Create user profile
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: authData.user.id,
+            username: newUser.username,
+            full_name: newUser.full_name,
+            role: newUser.role,
+            token_limit: newUser.token_limit,
+            word_limit: newUser.word_limit,
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+          setMessage('User created but profile failed: ' + profileError.message);
+          setMessageType('error');
+        } else {
+          setMessage('User created successfully!');
+          setMessageType('success');
+          
+          // Reset form
+          setNewUser({
+            email: '',
+            password: '',
+            username: '',
+            full_name: '',
+            role: 'Business Dev User',
+            token_limit: 5000,
+            word_limit: 1000
+          });
+
+          // Reload users
+          await loadUsers();
+        }
+      }
+    } catch (error: any) {
+      console.error('Error in handleCreateUser:', error);
+      setMessage('Error creating user: ' + error.message);
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteApiKey = (keyId: string) => {
-    setApiKeys(apiKeys.filter((key) => key.id !== keyId));
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Delete user profile (this will cascade to related data due to foreign keys)
+      const { error } = await supabase
+        .from('user_profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error deleting user:', error);
+        setMessage('Error deleting user: ' + error.message);
+        setMessageType('error');
+      } else {
+        setMessage('User deleted successfully');
+        setMessageType('success');
+        await loadUsers();
+      }
+    } catch (error: any) {
+      console.error('Error in handleDeleteUser:', error);
+      setMessage('Error deleting user: ' + error.message);
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleKeyVisibility = (keyId: string) => {
-    setShowKeys((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
+  const handleUpdateSystemSettings = async () => {
+    try {
+      setLoading(true);
+      setMessage('');
+
+      // Update each setting
+      const updates = [
+        { key: 'default_user_tokens', value: systemSettings.default_user_tokens },
+        { key: 'default_user_words', value: systemSettings.default_user_words },
+        { key: 'max_tokens_per_request', value: systemSettings.max_tokens_per_request },
+        { key: 'max_words_per_response', value: systemSettings.max_words_per_response },
+        { key: 'daily_request_limit', value: systemSettings.daily_request_limit },
+        { key: 'openai_api_key', value: systemSettings.openai_api_key },
+        { key: 'serper_api_key', value: systemSettings.serper_api_key },
+        { key: 'anthropic_api_key', value: systemSettings.anthropic_api_key },
+      ];
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('system_settings')
+          .update({ 
+            setting_value: JSON.stringify(update.value),
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', update.key);
+
+        if (error) {
+          console.error(`Error updating ${update.key}:`, error);
+          throw error;
+        }
+      }
+
+      setMessage('System settings updated successfully!');
+      setMessageType('success');
+    } catch (error: any) {
+      console.error('Error updating system settings:', error);
+      setMessage('Error updating settings: ' + error.message);
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (user?.role !== "Admin") {
+  const toggleKeyVisibility = (keyName: string) => {
+    setShowKeys(prev => ({ ...prev, [keyName]: !prev[keyName] }));
+  };
+
+  const formatAPIKey = (key: string, keyName: string): string => {
+    if (!key) return 'Not set';
+    if (showKeys[keyName]) return key;
+    return key.substring(0, 8) + '***************************';
+  };
+
+  if (user?.role !== 'Admin') {
     return (
       <div className="p-6 flex items-center justify-center min-h-full">
         <Card className="w-full max-w-md text-center">
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Access Denied
-            </h2>
-            <p className="text-gray-600">
-              You don't have permission to access this page.
-            </p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600">You don't have permission to access this page.</p>
           </CardContent>
         </Card>
       </div>
@@ -201,18 +311,33 @@ export default function AdminPanel() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-        <p className="text-gray-600">
-          Manage users, API keys, and system settings
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+          <p className="text-gray-600">Manage users, API keys, and system settings</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            loadUsers();
+            loadSystemSettings();
+          }}
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-6"
-      >
+      {message && (
+        <Alert variant={messageType === 'error' ? 'destructive' : 'default'} className={messageType === 'success' ? 'border-green-200 bg-green-50' : ''}>
+          <AlertDescription className={messageType === 'success' ? 'text-green-800' : ''}>
+            {message}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="users" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
@@ -224,7 +349,7 @@ export default function AdminPanel() {
           </TabsTrigger>
           <TabsTrigger value="limits" className="flex items-center space-x-2">
             <Gauge className="h-4 w-4" />
-            <span>System Limits</span>
+            <span>System Settings</span>
           </TabsTrigger>
         </TabsList>
 
@@ -243,57 +368,57 @@ export default function AdminPanel() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
-                      id="username"
-                      value={newUser.username}
-                      onChange={(e) =>
-                        setNewUser({ ...newUser, username: e.target.value })
-                      }
-                      placeholder="Enter username"
+                      id="email"
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      placeholder="user@company.com"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="password">Password *</Label>
                     <Input
-                      id="name"
-                      value={newUser.name}
-                      onChange={(e) =>
-                        setNewUser({ ...newUser, name: e.target.value })
-                      }
-                      placeholder="Enter full name"
+                      id="password"
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      placeholder="Min 6 characters"
+                      minLength={6}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, password: e.target.value })
-                    }
-                    placeholder="Enter password"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username *</Label>
+                    <Input
+                      id="username"
+                      value={newUser.username}
+                      onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                      placeholder="username"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Input
+                      id="full_name"
+                      value={newUser.full_name}
+                      onChange={(e) => setNewUser({ ...newUser, full_name: e.target.value })}
+                      placeholder="John Doe"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select
-                    value={newUser.role}
-                    onValueChange={(value: "Admin" | "Business Dev User") =>
-                      setNewUser({ ...newUser, role: value })
-                    }
-                  >
+                  <Select value={newUser.role} onValueChange={(value: 'Admin' | 'Business Dev User') => setNewUser({ ...newUser, role: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Business Dev User">
-                        Business Dev User
-                      </SelectItem>
+                      <SelectItem value="Business Dev User">Business Dev User</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
@@ -305,13 +430,8 @@ export default function AdminPanel() {
                     <Input
                       id="tokenLimit"
                       type="number"
-                      value={newUser.tokenLimit}
-                      onChange={(e) =>
-                        setNewUser({
-                          ...newUser,
-                          tokenLimit: parseInt(e.target.value),
-                        })
-                      }
+                      value={newUser.token_limit}
+                      onChange={(e) => setNewUser({ ...newUser, token_limit: parseInt(e.target.value) })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -319,20 +439,24 @@ export default function AdminPanel() {
                     <Input
                       id="wordLimit"
                       type="number"
-                      value={newUser.wordLimit}
-                      onChange={(e) =>
-                        setNewUser({
-                          ...newUser,
-                          wordLimit: parseInt(e.target.value),
-                        })
-                      }
+                      value={newUser.word_limit}
+                      onChange={(e) => setNewUser({ ...newUser, word_limit: parseInt(e.target.value) })}
                     />
                   </div>
                 </div>
 
-                <Button onClick={handleCreateUser} className="w-full">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Create User
+                <Button onClick={handleCreateUser} className="w-full" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Creating User...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Create User
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -340,60 +464,53 @@ export default function AdminPanel() {
             {/* Current Users */}
             <Card>
               <CardHeader>
-                <CardTitle>Current Users</CardTitle>
-                <CardDescription>
-                  Manage existing users and their limits
-                </CardDescription>
+                <CardTitle>Current Users ({users.length})</CardTitle>
+                <CardDescription>Manage existing users and their limits</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {users.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {users.map((userProfile) => (
+                    <div key={userProfile.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-medium">{user.name}</h3>
-                          <Badge
-                            variant={
-                              user.role === "Admin" ? "default" : "secondary"
-                            }
-                          >
-                            {user.role}
+                          <h3 className="font-medium">{userProfile.full_name}</h3>
+                          <Badge variant={userProfile.role === 'Admin' ? 'default' : 'secondary'}>
+                            {userProfile.role}
                           </Badge>
-                          <Badge
-                            variant={
-                              user.status === "Active"
-                                ? "default"
-                                : "destructive"
-                            }
-                          >
-                            {user.status}
+                          <Badge variant={userProfile.status === 'Active' ? 'default' : 'destructive'}>
+                            {userProfile.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600">
-                          @{user.username}
-                        </p>
+                        <p className="text-sm text-gray-600">@{userProfile.username}</p>
                         <p className="text-xs text-gray-500">
-                          Tokens: {user.tokenLimit} | Words: {user.wordLimit}
+                          Tokens: {userProfile.tokens_used}/{userProfile.token_limit} | 
+                          Words: {userProfile.words_used}/{userProfile.word_limit} |
+                          Daily: {userProfile.daily_requests}
                         </p>
                       </div>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={user.username === "admin"}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDeleteUser(userProfile.id)}
+                          disabled={userProfile.username === 'admin' || loading}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                  
+                  {users.length === 0 && !loading && (
+                    <div className="text-center py-8">
+                      <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
+                      <p className="text-gray-600">Create your first user to get started</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -402,130 +519,124 @@ export default function AdminPanel() {
 
         {/* API Keys Tab */}
         <TabsContent value="api-keys" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add API Key */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Key className="h-5 w-5" />
-                  <span>Add API Key</span>
-                </CardTitle>
-                <CardDescription>
-                  Configure API keys for external services
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="apiName">API Name</Label>
-                  <Input
-                    id="apiName"
-                    value={newApiKey.name}
-                    onChange={(e) =>
-                      setNewApiKey({ ...newApiKey, name: e.target.value })
-                    }
-                    placeholder="e.g., OpenAI GPT-4"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="service">Service</Label>
-                  <Select
-                    value={newApiKey.service}
-                    onValueChange={(value) =>
-                      setNewApiKey({ ...newApiKey, service: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select service" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OpenAI">OpenAI</SelectItem>
-                      <SelectItem value="Serper">Serper AI</SelectItem>
-                      <SelectItem value="Anthropic">Anthropic</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">API Key</Label>
-                  <Textarea
-                    id="apiKey"
-                    value={newApiKey.key}
-                    onChange={(e) =>
-                      setNewApiKey({ ...newApiKey, key: e.target.value })
-                    }
-                    placeholder="Enter your API key"
-                    rows={3}
-                  />
-                </div>
-
-                <Button onClick={handleCreateApiKey} className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Save API Key
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Current API Keys */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Current API Keys</CardTitle>
-                <CardDescription>
-                  Manage your configured API keys
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Key className="h-5 w-5" />
+                <span>API Key Management</span>
+              </CardTitle>
+              <CardDescription>Configure API keys for external services</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  {apiKeys.map((key) => (
-                    <div key={key.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-medium">{key.name}</h3>
-                          <Badge>{key.service}</Badge>
-                          <Badge
-                            variant={
-                              key.status === "Active"
-                                ? "default"
-                                : "destructive"
-                            }
-                          >
-                            {key.status}
-                          </Badge>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleKeyVisibility(key.id)}
-                          >
-                            {showKeys[key.id] ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteApiKey(key.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600 font-mono">
-                        {showKeys[key.id] ? key.key : key.key}
-                      </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="openai_key">OpenAI API Key</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="openai_key"
+                        type={showKeys.openai ? 'text' : 'password'}
+                        value={systemSettings.openai_api_key}
+                        onChange={(e) => setSystemSettings({ ...systemSettings, openai_api_key: e.target.value })}
+                        placeholder="sk-..."
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleKeyVisibility('openai')}
+                      >
+                        {showKeys.openai ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="serper_key">Serper AI API Key</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="serper_key"
+                        type={showKeys.serper ? 'text' : 'password'}
+                        value={systemSettings.serper_api_key}
+                        onChange={(e) => setSystemSettings({ ...systemSettings, serper_api_key: e.target.value })}
+                        placeholder="Enter Serper API key"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleKeyVisibility('serper')}
+                      >
+                        {showKeys.serper ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="anthropic_key">Anthropic API Key</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="anthropic_key"
+                        type={showKeys.anthropic ? 'text' : 'password'}
+                        value={systemSettings.anthropic_api_key}
+                        onChange={(e) => setSystemSettings({ ...systemSettings, anthropic_api_key: e.target.value })}
+                        placeholder="Enter Anthropic API key"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleKeyVisibility('anthropic')}
+                      >
+                        {showKeys.anthropic ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-3">API Key Status</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>OpenAI:</span>
+                      <Badge variant={systemSettings.openai_api_key ? 'default' : 'destructive'}>
+                        {systemSettings.openai_api_key ? 'Configured' : 'Not Set'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Serper AI:</span>
+                      <Badge variant={systemSettings.serper_api_key ? 'default' : 'destructive'}>
+                        {systemSettings.serper_api_key ? 'Configured' : 'Not Set'}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Anthropic:</span>
+                      <Badge variant={systemSettings.anthropic_api_key ? 'default' : 'destructive'}>
+                        {systemSettings.anthropic_api_key ? 'Configured' : 'Not Set'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handleUpdateSystemSettings} disabled={loading}>
+                {loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save API Keys
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* System Limits Tab */}
+        {/* System Settings Tab */}
         <TabsContent value="limits" className="space-y-6">
           <Card>
             <CardHeader>
@@ -533,9 +644,7 @@ export default function AdminPanel() {
                 <Gauge className="h-5 w-5" />
                 <span>System Limits & Defaults</span>
               </CardTitle>
-              <CardDescription>
-                Configure default limits and system-wide restrictions
-              </CardDescription>
+              <CardDescription>Configure default limits and system-wide restrictions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -546,13 +655,8 @@ export default function AdminPanel() {
                     <Input
                       id="defaultTokens"
                       type="number"
-                      value={systemLimits.defaultUserTokens}
-                      onChange={(e) =>
-                        setSystemLimits({
-                          ...systemLimits,
-                          defaultUserTokens: parseInt(e.target.value),
-                        })
-                      }
+                      value={systemSettings.default_user_tokens}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, default_user_tokens: parseInt(e.target.value) })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -560,13 +664,8 @@ export default function AdminPanel() {
                     <Input
                       id="defaultWords"
                       type="number"
-                      value={systemLimits.defaultUserWords}
-                      onChange={(e) =>
-                        setSystemLimits({
-                          ...systemLimits,
-                          defaultUserWords: parseInt(e.target.value),
-                        })
-                      }
+                      value={systemSettings.default_user_words}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, default_user_words: parseInt(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -574,35 +673,21 @@ export default function AdminPanel() {
                 <div className="space-y-4">
                   <h3 className="font-medium">Request Limits</h3>
                   <div className="space-y-2">
-                    <Label htmlFor="maxTokensRequest">
-                      Max Tokens per Request
-                    </Label>
+                    <Label htmlFor="maxTokensRequest">Max Tokens per Request</Label>
                     <Input
                       id="maxTokensRequest"
                       type="number"
-                      value={systemLimits.maxTokensPerRequest}
-                      onChange={(e) =>
-                        setSystemLimits({
-                          ...systemLimits,
-                          maxTokensPerRequest: parseInt(e.target.value),
-                        })
-                      }
+                      value={systemSettings.max_tokens_per_request}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, max_tokens_per_request: parseInt(e.target.value) })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="maxWordsResponse">
-                      Max Words per Response
-                    </Label>
+                    <Label htmlFor="maxWordsResponse">Max Words per Response</Label>
                     <Input
                       id="maxWordsResponse"
                       type="number"
-                      value={systemLimits.maxWordsPerResponse}
-                      onChange={(e) =>
-                        setSystemLimits({
-                          ...systemLimits,
-                          maxWordsPerResponse: parseInt(e.target.value),
-                        })
-                      }
+                      value={systemSettings.max_words_per_response}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, max_words_per_response: parseInt(e.target.value) })}
                     />
                   </div>
                   <div className="space-y-2">
@@ -610,13 +695,8 @@ export default function AdminPanel() {
                     <Input
                       id="dailyLimit"
                       type="number"
-                      value={systemLimits.dailyRequestLimit}
-                      onChange={(e) =>
-                        setSystemLimits({
-                          ...systemLimits,
-                          dailyRequestLimit: parseInt(e.target.value),
-                        })
-                      }
+                      value={systemSettings.daily_request_limit}
+                      onChange={(e) => setSystemSettings({ ...systemSettings, daily_request_limit: parseInt(e.target.value) })}
                     />
                   </div>
                 </div>
@@ -624,9 +704,18 @@ export default function AdminPanel() {
 
               <Separator />
 
-              <Button className="w-full">
-                <Save className="h-4 w-4 mr-2" />
-                Save System Settings
+              <Button onClick={handleUpdateSystemSettings} className="w-full" disabled={loading}>
+                {loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving Settings...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save System Settings
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
