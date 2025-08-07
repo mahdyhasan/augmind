@@ -14,6 +14,7 @@ import AdminPanel from "./pages/AdminPanel";
 import ClientProspect from "./pages/ClientProspect";
 import Uploads from "./pages/Uploads";
 import PresetQuestions from "./pages/PresetQuestions";
+import Settings from "./pages/Settings";
 import AdminSetup from "./components/AdminSetup";
 import PlaceholderPage from "./components/PlaceholderPage";
 import NotFound from "./pages/NotFound";
