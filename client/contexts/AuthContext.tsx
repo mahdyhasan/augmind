@@ -252,8 +252,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const handleDemoLogin = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  const handleDemoLogin = async (email: string): Promise<{ success: boolean; error?: string; demoMode?: boolean }> => {
     try {
+      console.log("handleDemoLogin: Creating demo user for:", email);
+
       // Create a demo user object
       const isAdmin = email === "admin@augmind.com";
       const demoUser = {
@@ -264,12 +266,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         email: email,
       };
 
-      console.log("Login: Setting demo user:", demoUser);
+      console.log("handleDemoLogin: Setting demo user:", demoUser);
       setUser(demoUser);
       setLoading(false);
 
-      return { success: true };
+      return { success: true, demoMode: true };
     } catch (error: any) {
+      console.error("handleDemoLogin: Error:", error);
       return { success: false, error: "Demo login failed: " + error.message };
     }
   };
