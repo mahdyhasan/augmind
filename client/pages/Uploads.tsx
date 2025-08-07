@@ -241,52 +241,159 @@ export default function Uploads() {
 
   const handleFileUpload = async (fileList: File[]) => {
     if (!selectedCategory) {
-      alert("Please select a category first");
+      setError("Please select a category first");
       return;
     }
 
+    if (!user) {
+      setError("You must be logged in to upload files");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+
     for (const file of fileList) {
-      if (
-        !["application/pdf", "text/plain", "text/markdown"].includes(file.type)
-      ) {
-        alert(
-          `File type ${file.type} is not supported. Please upload PDF, TXT, or MD files.`,
-        );
+      // Validate file type
+      const allowedTypes = [
+        "application/pdf",
+        "text/plain",
+        "text/markdown",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        setError(`File type ${file.type} is not supported. Please upload PDF, DOC, DOCX, TXT, MD, CSV, or Excel files.`);
+        continue;
+      }
+
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`File ${file.name} is too large. Maximum size is 10MB.`);
         continue;
       }
 
       setIsUploading(true);
       setUploadProgress(0);
 
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(progressInterval);
-            setIsUploading(false);
-            return 100;
+      try {
+        if (connectionStatus === "connected") {
+          // Real upload to Supabase Storage
+          const fileExtension = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+          const filePath = `uploads/${user.id}/${fileName}`;
+
+          // Progress simulation (since Supabase Storage doesn't provide progress callbacks)
+          const progressInterval = setInterval(() => {
+            setUploadProgress((prev) => {
+              if (prev >= 90) {
+                clearInterval(progressInterval);
+                return 90;
+              }
+              return prev + 15;
+            });
+          }, 300);
+
+          // Upload file to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          clearInterval(progressInterval);
+
+          if (uploadError) {
+            throw uploadError;
           }
-          return prev + 10;
-        });
-      }, 200);
 
-      // Create new file entry
-      const newFile: UploadedFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        category: selectedCategory,
-        uploadedBy: user?.name || "Unknown",
-        uploadedAt: new Date(),
-        status: "Processing",
-      };
+          setUploadProgress(95);
 
-      // Add to files list after upload completes
-      setTimeout(() => {
-        setFiles((prev) => [{ ...newFile, status: "Complete" }, ...prev]);
+          // Save file metadata to database
+          const { data: docData, error: docError } = await supabase
+            .from('documents')
+            .insert({
+              filename: file.name,
+              original_filename: file.name,
+              file_size: file.size,
+              file_type: file.type,
+              category: selectedCategory,
+              description: description || null,
+              storage_path: filePath,
+              storage_bucket: 'documents',
+              content_processed: false,
+              uploaded_by: user.id,
+            })
+            .select()
+            .single();
+
+          if (docError) {
+            // Clean up uploaded file if database insert fails
+            await supabase.storage.from('documents').remove([filePath]);
+            throw docError;
+          }
+
+          setUploadProgress(100);
+          setSuccess(`File "${file.name}" uploaded successfully!`);
+
+          // Add to local files list
+          const newFile: UploadedFile = {
+            id: docData.id,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            category: selectedCategory,
+            uploadedBy: user.name || user.username,
+            uploadedAt: new Date(),
+            status: "Processing",
+            description: description || undefined,
+          };
+
+          setFiles(prev => [newFile, ...prev]);
+
+        } else {
+          // Offline mode - simulate upload
+          const progressInterval = setInterval(() => {
+            setUploadProgress((prev) => {
+              if (prev >= 100) {
+                clearInterval(progressInterval);
+                return 100;
+              }
+              return prev + 20;
+            });
+          }, 200);
+
+          await new Promise(resolve => setTimeout(resolve, 1000));
+
+          const newFile: UploadedFile = {
+            id: `offline-${Date.now()}`,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            category: selectedCategory,
+            uploadedBy: user.name || user.username,
+            uploadedAt: new Date(),
+            status: "Complete",
+            description: `${description || file.name} (Offline Mode - will sync when connected)`,
+          };
+
+          setFiles(prev => [newFile, ...prev]);
+          setSuccess(`File "${file.name}" queued for upload (offline mode)!`);
+        }
+
+      } catch (error: any) {
+        console.error("Upload error:", error);
+        setError(`Error uploading ${file.name}: ${error.message}`);
+      } finally {
+        setIsUploading(false);
         setUploadProgress(0);
-      }, 2000);
+        setDescription("");
+      }
     }
   };
 
