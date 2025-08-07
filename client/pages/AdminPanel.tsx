@@ -200,8 +200,8 @@ export default function AdminPanel() {
         const errorMsg =
           error?.message || error?.toString() || "Unknown error loading users";
         console.error("Error loading users:", errorMsg);
-        console.log("Switching to demo data for users");
-        loadDemoUsers();
+        setMessage("Error loading users: " + errorMsg);
+        setMessageType("error");
         return;
       } else {
         console.log("Users loaded:", data);
