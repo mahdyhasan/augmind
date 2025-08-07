@@ -187,17 +187,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      console.log('Login: Starting login process for:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.log('Login: Auth error:', error.message);
         return { success: false, error: error.message };
       }
 
+      console.log('Login: Auth successful, user will be set via onAuthStateChange');
       return { success: true };
     } catch (error: any) {
+      console.log('Login: Exception during login:', error.message);
       return { success: false, error: error.message };
     }
   };
