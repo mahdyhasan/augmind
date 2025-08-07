@@ -12,7 +12,15 @@ import { ScrollArea } from "../components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
-import { Send, Bot, User, Lightbulb, RefreshCw, Wifi, WifiOff } from "lucide-react";
+import {
+  Send,
+  Bot,
+  User,
+  Lightbulb,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import {
   supabase,
@@ -39,7 +47,9 @@ export default function AIChat() {
   const [currentConversation, setCurrentConversation] =
     useState<Conversation | null>(null);
   const [error, setError] = useState("");
-  const [connectionStatus, setConnectionStatus] = useState<"connected" | "disconnected" | "testing">("testing");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "testing"
+  >("testing");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -79,7 +89,8 @@ export default function AIChat() {
         {
           id: "demo-1",
           title: "Market Analysis",
-          prompt: "Can you provide a comprehensive market analysis for my industry?",
+          prompt:
+            "Can you provide a comprehensive market analysis for my industry?",
           category: "Strategy",
           description: "Get insights on market trends and opportunities",
           is_active: true,
@@ -91,7 +102,8 @@ export default function AIChat() {
         {
           id: "demo-2",
           title: "Competitive Strategy",
-          prompt: "Help me develop a competitive strategy against my main competitors",
+          prompt:
+            "Help me develop a competitive strategy against my main competitors",
           category: "Competition",
           description: "Analyze competitive landscape and positioning",
           is_active: true,
@@ -111,7 +123,7 @@ export default function AIChat() {
           created_by: user?.id || "",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        }
+        },
       ]);
 
       // Initialize offline conversation
@@ -208,18 +220,19 @@ export default function AIChat() {
     try {
       // Only save to database if connected
       if (connectionStatus === "connected" && currentConversation) {
-        const { data: userMessageData, error: userMessageError } = await supabase
-          .from("messages")
-          .insert({
-            conversation_id: currentConversation.id,
-            sender: "user",
-            content: userMessage.content,
-            tokens_used: Math.ceil(userMessage.content.length / 4), // Rough token estimation
-            words_count: userMessage.content.split(" ").length,
-            preset_question_id: presetQuestionId,
-          })
-          .select()
-          .single();
+        const { data: userMessageData, error: userMessageError } =
+          await supabase
+            .from("messages")
+            .insert({
+              conversation_id: currentConversation.id,
+              sender: "user",
+              content: userMessage.content,
+              tokens_used: Math.ceil(userMessage.content.length / 4), // Rough token estimation
+              words_count: userMessage.content.split(" ").length,
+              preset_question_id: presetQuestionId,
+            })
+            .select()
+            .single();
 
         if (userMessageError) {
           console.error("Error saving user message:", userMessageError);
@@ -400,15 +413,29 @@ export default function AIChat() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Badge variant={
-                connectionStatus === "connected" ? "default" :
-                connectionStatus === "testing" ? "secondary" : "destructive"
-              }>
-                {connectionStatus === "connected" && <Wifi className="h-3 w-3 mr-1" />}
-                {connectionStatus === "disconnected" && <WifiOff className="h-3 w-3 mr-1" />}
-                {connectionStatus === "testing" && <RefreshCw className="h-3 w-3 mr-1 animate-spin" />}
-                {connectionStatus === "connected" ? "Live Data" :
-                 connectionStatus === "testing" ? "Testing..." : "Offline Mode"}
+              <Badge
+                variant={
+                  connectionStatus === "connected"
+                    ? "default"
+                    : connectionStatus === "testing"
+                      ? "secondary"
+                      : "destructive"
+                }
+              >
+                {connectionStatus === "connected" && (
+                  <Wifi className="h-3 w-3 mr-1" />
+                )}
+                {connectionStatus === "disconnected" && (
+                  <WifiOff className="h-3 w-3 mr-1" />
+                )}
+                {connectionStatus === "testing" && (
+                  <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                )}
+                {connectionStatus === "connected"
+                  ? "Live Data"
+                  : connectionStatus === "testing"
+                    ? "Testing..."
+                    : "Offline Mode"}
               </Badge>
 
               {connectionStatus === "disconnected" && (
@@ -427,9 +454,7 @@ export default function AIChat() {
 
           {error && (
             <Alert className="mt-3">
-              <AlertDescription>
-                {error}
-              </AlertDescription>
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
         </div>

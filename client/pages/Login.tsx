@@ -202,7 +202,6 @@ export default function Login() {
                   : "Don't have an account? Sign up"}
               </button>
             </div>
-
           </CardContent>
         </Card>
 

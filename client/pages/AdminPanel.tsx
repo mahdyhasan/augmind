@@ -184,7 +184,9 @@ export default function AdminPanel() {
           loadSystemSettings();
         } else {
           console.log("Database connection failed");
-          setMessage("Database connection failed. Please check your configuration.");
+          setMessage(
+            "Database connection failed. Please check your configuration.",
+          );
           setMessageType("error");
         }
       };
@@ -244,7 +246,6 @@ export default function AdminPanel() {
       setLoading(false);
     }
   };
-
 
   const loadSystemSettings = async () => {
     try {
@@ -309,7 +310,6 @@ export default function AdminPanel() {
       setLoading(false);
     }
   };
-
 
   const handleCreateUser = async () => {
     if (
@@ -482,25 +482,37 @@ export default function AdminPanel() {
       console.log("Updating system settings...");
 
       // Validate settings before saving
-      if (systemSettings.default_user_tokens < 100 || systemSettings.default_user_tokens > 100000) {
+      if (
+        systemSettings.default_user_tokens < 100 ||
+        systemSettings.default_user_tokens > 100000
+      ) {
         setMessage("Default user tokens must be between 100 and 100,000");
         setMessageType("error");
         return;
       }
 
-      if (systemSettings.default_user_words < 10 || systemSettings.default_user_words > 10000) {
+      if (
+        systemSettings.default_user_words < 10 ||
+        systemSettings.default_user_words > 10000
+      ) {
         setMessage("Default user words must be between 10 and 10,000");
         setMessageType("error");
         return;
       }
 
-      if (systemSettings.max_tokens_per_request < 100 || systemSettings.max_tokens_per_request > 10000) {
+      if (
+        systemSettings.max_tokens_per_request < 100 ||
+        systemSettings.max_tokens_per_request > 10000
+      ) {
         setMessage("Max tokens per request must be between 100 and 10,000");
         setMessageType("error");
         return;
       }
 
-      if (systemSettings.daily_request_limit < 1 || systemSettings.daily_request_limit > 10000) {
+      if (
+        systemSettings.daily_request_limit < 1 ||
+        systemSettings.daily_request_limit > 10000
+      ) {
         setMessage("Daily request limit must be between 1 and 10,000");
         setMessageType("error");
         return;
@@ -1232,7 +1244,10 @@ export default function AdminPanel() {
                   id="edit-fullname"
                   value={editingUser.full_name}
                   onChange={(e) =>
-                    setEditingUser({ ...editingUser, full_name: e.target.value })
+                    setEditingUser({
+                      ...editingUser,
+                      full_name: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -1327,9 +1342,12 @@ export default function AdminPanel() {
       </Dialog>
 
       {/* Confirmation Dialog */}
-      <AlertDialog open={confirmDialog.isOpen} onOpenChange={(open) =>
-        setConfirmDialog({ ...confirmDialog, isOpen: open })
-      }>
+      <AlertDialog
+        open={confirmDialog.isOpen}
+        onOpenChange={(open) =>
+          setConfirmDialog({ ...confirmDialog, isOpen: open })
+        }
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>

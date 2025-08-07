@@ -86,7 +86,9 @@ export default function Uploads() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<"connected" | "disconnected" | "testing">("testing");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "testing"
+  >("testing");
 
   const [files, setFiles] = useState<UploadedFile[]>([]);
 
@@ -114,7 +116,9 @@ export default function Uploads() {
     } catch (error: any) {
       console.error("Connection test failed:", error);
       setConnectionStatus("disconnected");
-      setError("Unable to connect to the database. Using offline mode with demo files.");
+      setError(
+        "Unable to connect to the database. Using offline mode with demo files.",
+      );
 
       // Load demo files for offline mode
       setFiles([
@@ -152,7 +156,8 @@ export default function Uploads() {
 
       let query = supabase
         .from("documents")
-        .select(`
+        .select(
+          `
           id,
           filename,
           file_size,
@@ -163,7 +168,8 @@ export default function Uploads() {
           uploaded_by,
           content_processed,
           user_profiles!documents_uploaded_by_fkey(full_name)
-        `)
+        `,
+        )
         .order("created_at", { ascending: false });
 
       // If not admin, only show user's own files
@@ -264,11 +270,13 @@ export default function Uploads() {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "text/csv",
         "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       ];
 
       if (!allowedTypes.includes(file.type)) {
-        setError(`File type ${file.type} is not supported. Please upload PDF, DOC, DOCX, TXT, MD, CSV, or Excel files.`);
+        setError(
+          `File type ${file.type} is not supported. Please upload PDF, DOC, DOCX, TXT, MD, CSV, or Excel files.`,
+        );
         continue;
       }
 
@@ -284,7 +292,7 @@ export default function Uploads() {
       try {
         if (connectionStatus === "connected") {
           // Real upload to Supabase Storage
-          const fileExtension = file.name.split('.').pop();
+          const fileExtension = file.name.split(".").pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
           const filePath = `uploads/${user.id}/${fileName}`;
 
@@ -300,11 +308,10 @@ export default function Uploads() {
           }, 300);
 
           // Upload file to Supabase Storage
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('documents')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: false
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("documents").upload(filePath, file, {
+              cacheControl: "3600",
+              upsert: false,
             });
 
           clearInterval(progressInterval);
@@ -317,7 +324,7 @@ export default function Uploads() {
 
           // Save file metadata to database
           const { data: docData, error: docError } = await supabase
-            .from('documents')
+            .from("documents")
             .insert({
               filename: file.name,
               original_filename: file.name,
@@ -326,7 +333,7 @@ export default function Uploads() {
               category: selectedCategory,
               description: description || null,
               storage_path: filePath,
-              storage_bucket: 'documents',
+              storage_bucket: "documents",
               content_processed: false,
               uploaded_by: user.id,
             })
@@ -335,7 +342,7 @@ export default function Uploads() {
 
           if (docError) {
             // Clean up uploaded file if database insert fails
-            await supabase.storage.from('documents').remove([filePath]);
+            await supabase.storage.from("documents").remove([filePath]);
             throw docError;
           }
 
@@ -355,8 +362,7 @@ export default function Uploads() {
             description: description || undefined,
           };
 
-          setFiles(prev => [newFile, ...prev]);
-
+          setFiles((prev) => [newFile, ...prev]);
         } else {
           // Offline mode - simulate upload
           const progressInterval = setInterval(() => {
@@ -369,7 +375,7 @@ export default function Uploads() {
             });
           }, 200);
 
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           const newFile: UploadedFile = {
             id: `offline-${Date.now()}`,
@@ -383,10 +389,9 @@ export default function Uploads() {
             description: `${description || file.name} (Offline Mode - will sync when connected)`,
           };
 
-          setFiles(prev => [newFile, ...prev]);
+          setFiles((prev) => [newFile, ...prev]);
           setSuccess(`File "${file.name}" queued for upload (offline mode)!`);
         }
-
       } catch (error: any) {
         console.error("Upload error:", error);
         setError(`Error uploading ${file.name}: ${error.message}`);
@@ -399,7 +404,11 @@ export default function Uploads() {
   };
 
   const handleDeleteFile = async (fileId: string, fileName: string) => {
-    if (!confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${fileName}"? This action cannot be undone.`,
+      )
+    ) {
       return;
     }
 
@@ -410,9 +419,9 @@ export default function Uploads() {
       if (connectionStatus === "connected") {
         // Get file info first
         const { data: fileData, error: fetchError } = await supabase
-          .from('documents')
-          .select('storage_path, storage_bucket')
-          .eq('id', fileId)
+          .from("documents")
+          .select("storage_path, storage_bucket")
+          .eq("id", fileId)
           .single();
 
         if (fetchError) {
@@ -433,9 +442,9 @@ export default function Uploads() {
 
         // Delete from database
         const { error: deleteError } = await supabase
-          .from('documents')
+          .from("documents")
           .delete()
-          .eq('id', fileId);
+          .eq("id", fileId);
 
         if (deleteError) {
           throw deleteError;
@@ -448,8 +457,7 @@ export default function Uploads() {
       }
 
       // Remove from local state
-      setFiles(prev => prev.filter(file => file.id !== fileId));
-
+      setFiles((prev) => prev.filter((file) => file.id !== fileId));
     } catch (error: any) {
       console.error("Delete error:", error);
       setError(`Error deleting file: ${error.message}`);
@@ -550,15 +558,29 @@ export default function Uploads() {
             <CardContent className="space-y-4">
               {/* Connection Status */}
               <div className="flex items-center justify-between mb-4">
-                <Badge variant={
-                  connectionStatus === "connected" ? "default" :
-                  connectionStatus === "testing" ? "secondary" : "destructive"
-                }>
-                  {connectionStatus === "connected" && <CheckCircle className="h-3 w-3 mr-1" />}
-                  {connectionStatus === "disconnected" && <XCircle className="h-3 w-3 mr-1" />}
-                  {connectionStatus === "testing" && <Clock className="h-3 w-3 mr-1" />}
-                  {connectionStatus === "connected" ? "Database Connected" :
-                   connectionStatus === "testing" ? "Testing Connection..." : "Offline Mode"}
+                <Badge
+                  variant={
+                    connectionStatus === "connected"
+                      ? "default"
+                      : connectionStatus === "testing"
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
+                  {connectionStatus === "connected" && (
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                  )}
+                  {connectionStatus === "disconnected" && (
+                    <XCircle className="h-3 w-3 mr-1" />
+                  )}
+                  {connectionStatus === "testing" && (
+                    <Clock className="h-3 w-3 mr-1" />
+                  )}
+                  {connectionStatus === "connected"
+                    ? "Database Connected"
+                    : connectionStatus === "testing"
+                      ? "Testing Connection..."
+                      : "Offline Mode"}
                 </Badge>
 
                 {connectionStatus === "disconnected" && (
@@ -613,7 +635,9 @@ export default function Uploads() {
 
               {success && (
                 <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-green-800">{success}</AlertDescription>
+                  <AlertDescription className="text-green-800">
+                    {success}
+                  </AlertDescription>
                 </Alert>
               )}
 
