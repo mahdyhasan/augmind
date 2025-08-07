@@ -100,13 +100,18 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       
-      <Route path="/prompts" element={
+      <Route path="/preset-questions" element={
         <ProtectedRoute>
           <DashboardLayout>
-            <PlaceholderPage 
-              title="Preset Prompts" 
-              description="Manage and create preset prompts for common strategic questions. (Admin Only)"
-            />
+            <PresetQuestions />
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <DashboardLayout>
+            <AdminPanel />
           </DashboardLayout>
         </ProtectedRoute>
       } />
