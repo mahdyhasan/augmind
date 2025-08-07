@@ -1,33 +1,45 @@
-import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Alert, AlertDescription } from './ui/alert';
-import { Shield, Users } from 'lucide-react';
-import { createDemoAdmin, createDemoBusinessUser } from '../lib/seedData';
+import React, { useState } from "react";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Shield, Users } from "lucide-react";
+import { createDemoAdmin, createDemoBusinessUser } from "../lib/seedData";
 
 export default function AdminSetup() {
   const [isCreating, setIsCreating] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">(
+    "success",
+  );
 
   const handleCreateDemoData = async () => {
     setIsCreating(true);
-    setMessage('');
+    setMessage("");
 
     try {
       const adminResult = await createDemoAdmin();
       const userResult = await createDemoBusinessUser();
 
       if (adminResult.success && userResult.success) {
-        setMessage('Demo accounts created successfully! You can now sign in with:\n\nAdmin: admin@augmind.com / admin123\nUser: user@augmind.com / user123');
-        setMessageType('success');
+        setMessage(
+          "Demo accounts created successfully! You can now sign in with:\n\nAdmin: admin@augmind.com / admin123\nUser: user@augmind.com / user123",
+        );
+        setMessageType("success");
       } else {
-        setMessage(`Errors occurred:\nAdmin: ${adminResult.error || 'Success'}\nUser: ${userResult.error || 'Success'}`);
-        setMessageType('error');
+        setMessage(
+          `Errors occurred:\nAdmin: ${adminResult.error || "Success"}\nUser: ${userResult.error || "Success"}`,
+        );
+        setMessageType("error");
       }
     } catch (error: any) {
       setMessage(`Error: ${error.message}`);
-      setMessageType('error');
+      setMessageType("error");
     } finally {
       setIsCreating(false);
     }
@@ -60,8 +72,16 @@ export default function AdminSetup() {
           </div>
 
           {message && (
-            <Alert variant={messageType === 'error' ? 'destructive' : 'default'} className={messageType === 'success' ? 'border-green-200 bg-green-50' : ''}>
-              <AlertDescription className={messageType === 'success' ? 'text-green-800' : ''} style={{ whiteSpace: 'pre-line' }}>
+            <Alert
+              variant={messageType === "error" ? "destructive" : "default"}
+              className={
+                messageType === "success" ? "border-green-200 bg-green-50" : ""
+              }
+            >
+              <AlertDescription
+                className={messageType === "success" ? "text-green-800" : ""}
+                style={{ whiteSpace: "pre-line" }}
+              >
                 {message}
               </AlertDescription>
             </Alert>
@@ -78,12 +98,13 @@ export default function AdminSetup() {
                 Creating Demo Accounts...
               </div>
             ) : (
-              'Create Demo Accounts'
+              "Create Demo Accounts"
             )}
           </Button>
 
           <p className="text-xs text-gray-500 text-center">
-            This will create demo accounts for testing. In production, admins would create accounts through the admin panel.
+            This will create demo accounts for testing. In production, admins
+            would create accounts through the admin panel.
           </p>
         </CardContent>
       </Card>

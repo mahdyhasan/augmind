@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error("Missing Supabase environment variables");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -14,14 +14,14 @@ export interface UserProfile {
   id: string;
   username: string;
   full_name: string;
-  role: 'Admin' | 'Business Dev User';
+  role: "Admin" | "Business Dev User";
   token_limit: number;
   word_limit: number;
   tokens_used: number;
   words_used: number;
   daily_requests: number;
   last_request_date: string;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   created_at: string;
   updated_at: string;
 }
@@ -67,7 +67,7 @@ export interface Conversation {
 export interface Message {
   id: string;
   conversation_id: string;
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   content: string;
   tokens_used: number;
   words_count: number;

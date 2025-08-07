@@ -1,27 +1,33 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Brain } from 'lucide-react';
+import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Brain } from "lucide-react";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login, signup, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setIsLoading(true);
 
     try {
@@ -29,28 +35,30 @@ export default function Login() {
         const result = await signup(email, password, {
           username,
           full_name: fullName,
-          role: 'Business Dev User'
+          role: "Business Dev User",
         });
-        
+
         if (result.success) {
-          setSuccess('Account created successfully! Please check your email to confirm your account, then sign in.');
+          setSuccess(
+            "Account created successfully! Please check your email to confirm your account, then sign in.",
+          );
           setIsSignUp(false);
           // Clear form
-          setEmail('');
-          setPassword('');
-          setUsername('');
-          setFullName('');
+          setEmail("");
+          setPassword("");
+          setUsername("");
+          setFullName("");
         } else {
-          setError(result.error || 'Failed to create account');
+          setError(result.error || "Failed to create account");
         }
       } else {
         const result = await login(email, password);
         if (!result.success) {
-          setError(result.error || 'Invalid email or password');
+          setError(result.error || "Invalid email or password");
         }
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      setError(err.message || "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -83,13 +91,12 @@ export default function Login() {
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </CardTitle>
             <CardDescription>
-              {isSignUp 
-                ? 'Sign up to access your strategic AI assistant'
-                : 'Sign in to access your strategic AI assistant'
-              }
+              {isSignUp
+                ? "Sign up to access your strategic AI assistant"
+                : "Sign in to access your strategic AI assistant"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -159,22 +166,22 @@ export default function Login() {
 
               {success && (
                 <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-green-800">{success}</AlertDescription>
+                  <AlertDescription className="text-green-800">
+                    {success}
+                  </AlertDescription>
                 </Alert>
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    {isSignUp ? 'Creating Account...' : 'Signing in...'}
+                    {isSignUp ? "Creating Account..." : "Signing in..."}
                   </div>
+                ) : isSignUp ? (
+                  "Create Account"
                 ) : (
-                  isSignUp ? 'Create Account' : 'Sign In'
+                  "Sign In"
                 )}
               </Button>
             </form>
@@ -184,15 +191,14 @@ export default function Login() {
                 type="button"
                 onClick={() => {
                   setIsSignUp(!isSignUp);
-                  setError('');
-                  setSuccess('');
+                  setError("");
+                  setSuccess("");
                 }}
                 className="text-sm text-primary hover:underline"
               >
-                {isSignUp 
-                  ? 'Already have an account? Sign in'
-                  : "Don't have an account? Sign up"
-                }
+                {isSignUp
+                  ? "Already have an account? Sign in"
+                  : "Don't have an account? Sign up"}
               </button>
             </div>
 
@@ -200,8 +206,16 @@ export default function Login() {
               <div className="mt-6 text-center text-sm text-gray-600">
                 <div className="mb-2">Demo Account:</div>
                 <div className="space-y-1 text-xs">
-                  <div>Email: <code className="bg-gray-100 px-1 rounded">admin@augmind.com</code></div>
-                  <div>Password: <code className="bg-gray-100 px-1 rounded">admin123</code></div>
+                  <div>
+                    Email:{" "}
+                    <code className="bg-gray-100 px-1 rounded">
+                      admin@augmind.com
+                    </code>
+                  </div>
+                  <div>
+                    Password:{" "}
+                    <code className="bg-gray-100 px-1 rounded">admin123</code>
+                  </div>
                 </div>
               </div>
             )}
