@@ -547,6 +547,32 @@ export default function Uploads() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Connection Status */}
+              <div className="flex items-center justify-between mb-4">
+                <Badge variant={
+                  connectionStatus === "connected" ? "default" :
+                  connectionStatus === "testing" ? "secondary" : "destructive"
+                }>
+                  {connectionStatus === "connected" && <CheckCircle className="h-3 w-3 mr-1" />}
+                  {connectionStatus === "disconnected" && <XCircle className="h-3 w-3 mr-1" />}
+                  {connectionStatus === "testing" && <Clock className="h-3 w-3 mr-1" />}
+                  {connectionStatus === "connected" ? "Database Connected" :
+                   connectionStatus === "testing" ? "Testing Connection..." : "Offline Mode"}
+                </Badge>
+
+                {connectionStatus === "disconnected" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={testConnection}
+                    disabled={connectionStatus === "testing"}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Retry Connection
+                  </Button>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
@@ -565,6 +591,30 @@ export default function Uploads() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of the file content..."
+                  rows={2}
+                />
+              </div>
+
+              {/* Error and Success Messages */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {success && (
+                <Alert className="border-green-200 bg-green-50">
+                  <AlertDescription className="text-green-800">{success}</AlertDescription>
+                </Alert>
+              )}
 
               <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
