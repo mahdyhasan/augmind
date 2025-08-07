@@ -36,6 +36,8 @@ export default function AIChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversation, setCurrentConversation] =
     useState<Conversation | null>(null);
+  const [error, setError] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState<"connected" | "disconnected" | "testing">("testing");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
