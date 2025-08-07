@@ -188,7 +188,8 @@ export default function AdminPanel() {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
-        console.error("Error loading users:", error);
+        const errorMsg = error?.message || error?.toString() || 'Unknown error loading users';
+        console.error("Error loading users:", errorMsg);
         console.log("Switching to demo data for users");
         loadDemoUsers();
         return;
