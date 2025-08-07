@@ -397,8 +397,64 @@ export default function Uploads() {
     }
   };
 
-  const handleDeleteFile = (fileId: string) => {
-    setFiles((prev) => prev.filter((file) => file.id !== fileId));
+  const handleDeleteFile = async (fileId: string, fileName: string) => {
+    if (!confirm(`Are you sure you want to delete "${fileName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      if (connectionStatus === "connected") {
+        // Get file info first
+        const { data: fileData, error: fetchError } = await supabase
+          .from('documents')
+          .select('storage_path, storage_bucket')
+          .eq('id', fileId)
+          .single();
+
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        // Delete from storage
+        if (fileData.storage_path) {
+          const { error: storageError } = await supabase.storage
+            .from(fileData.storage_bucket)
+            .remove([fileData.storage_path]);
+
+          if (storageError) {
+            console.error("Storage deletion error:", storageError);
+            // Continue with database deletion even if storage fails
+          }
+        }
+
+        // Delete from database
+        const { error: deleteError } = await supabase
+          .from('documents')
+          .delete()
+          .eq('id', fileId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
+
+        setSuccess(`File "${fileName}" deleted successfully!`);
+      } else {
+        // Offline mode - just remove from local state
+        setSuccess(`File "${fileName}" removed (offline mode)!`);
+      }
+
+      // Remove from local state
+      setFiles(prev => prev.filter(file => file.id !== fileId));
+
+    } catch (error: any) {
+      console.error("Delete error:", error);
+      setError(`Error deleting file: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
