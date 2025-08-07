@@ -91,6 +91,115 @@ export default function Uploads() {
 
   const categories = isAdmin ? adminCategories : userCategories;
 
+  React.useEffect(() => {
+    if (user) {
+      testConnection();
+    }
+  }, [user]);
+
+  const testConnection = async () => {
+    setConnectionStatus("testing");
+    setError("");
+
+    try {
+      const { data, error } = await supabase
+        .from("documents")
+        .select("count", { count: "exact", head: true });
+
+      if (error) throw error;
+
+      setConnectionStatus("connected");
+      await loadFiles();
+    } catch (error: any) {
+      console.error("Connection test failed:", error);
+      setConnectionStatus("disconnected");
+      setError("Unable to connect to the database. Using offline mode with demo files.");
+
+      // Load demo files for offline mode
+      setFiles([
+        {
+          id: "demo-1",
+          name: "competitor-analysis-q4.pdf",
+          size: 2458000,
+          type: "application/pdf",
+          category: "Competitors",
+          uploadedBy: "Administrator",
+          uploadedAt: new Date("2024-01-15"),
+          status: "Complete",
+          description: "Q4 competitive landscape analysis (Demo)",
+        },
+        {
+          id: "demo-2",
+          name: "client-feedback-summary.txt",
+          size: 156000,
+          type: "text/plain",
+          category: "Clients",
+          uploadedBy: user?.name || "Demo User",
+          uploadedAt: new Date("2024-01-20"),
+          status: "Complete",
+          description: "Client feedback summary (Demo)",
+        },
+      ]);
+    }
+  };
+
+  const loadFiles = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+
+      let query = supabase
+        .from("documents")
+        .select(`
+          id,
+          filename,
+          file_size,
+          file_type,
+          category,
+          description,
+          created_at,
+          uploaded_by,
+          content_processed,
+          user_profiles!documents_uploaded_by_fkey(full_name)
+        `)
+        .order("created_at", { ascending: false });
+
+      // If not admin, only show user's own files
+      if (!isAdmin) {
+        query = query.eq("uploaded_by", user.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error loading files:", error);
+        setError("Error loading files: " + error.message);
+        return;
+      }
+
+      const mappedFiles: UploadedFile[] = (data || []).map((doc: any) => ({
+        id: doc.id,
+        name: doc.filename,
+        size: doc.file_size,
+        type: doc.file_type,
+        category: doc.category,
+        uploadedBy: doc.user_profiles?.full_name || "Unknown",
+        uploadedAt: new Date(doc.created_at),
+        status: doc.content_processed ? "Complete" : "Processing",
+        description: doc.description,
+      }));
+
+      setFiles(mappedFiles);
+      setError("");
+    } catch (error: any) {
+      console.error("Error in loadFiles:", error);
+      setError("Error loading files: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredFiles = files.filter((file) => {
     const matchesSearch =
       file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
