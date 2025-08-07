@@ -763,7 +763,9 @@ export default function Uploads() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteFile(file.id)}
+                            onClick={() => handleDeleteFile(file.id, file.name)}
+                            disabled={loading}
+                            title="Delete file"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
