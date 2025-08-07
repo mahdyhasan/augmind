@@ -224,68 +224,6 @@ export default function AdminPanel() {
     }
   };
 
-  const loadDemoUsers = () => {
-    const demoUsers: UserProfile[] = [
-      {
-        id: "demo-admin-id",
-        username: "admin",
-        full_name: "Demo Administrator",
-        role: "Admin",
-        token_limit: 10000,
-        word_limit: 2000,
-        tokens_used: 1250,
-        words_used: 430,
-        daily_requests: 15,
-        last_request_date: new Date().toISOString(),
-        status: "Active",
-        created_at: new Date(
-          Date.now() - 7 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "demo-user-id",
-        username: "demo_user",
-        full_name: "Demo User",
-        role: "Business Dev User",
-        token_limit: 5000,
-        word_limit: 1000,
-        tokens_used: 680,
-        words_used: 245,
-        daily_requests: 8,
-        last_request_date: new Date().toISOString(),
-        status: "Active",
-        created_at: new Date(
-          Date.now() - 3 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "demo-user-2",
-        username: "john_smith",
-        full_name: "John Smith",
-        role: "Business Dev User",
-        token_limit: 5000,
-        word_limit: 1000,
-        tokens_used: 320,
-        words_used: 150,
-        daily_requests: 4,
-        last_request_date: new Date(
-          Date.now() - 2 * 60 * 60 * 1000,
-        ).toISOString(),
-        status: "Active",
-        created_at: new Date(
-          Date.now() - 1 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ];
-
-    setUsers(demoUsers);
-    setMessage(`Demo mode: Loaded ${demoUsers.length} demo users`);
-    setMessageType("success");
-    console.log("Demo users loaded:", demoUsers);
-  };
 
   const loadSystemSettings = async () => {
     try {
