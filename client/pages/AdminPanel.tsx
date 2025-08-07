@@ -129,7 +129,20 @@ export default function AdminPanel() {
   useEffect(() => {
     if (user?.role === "Admin") {
       const initializeAdminPanel = async () => {
-        console.log("Initializing admin panel...");
+        console.log("Initializing admin panel for user:", user?.email);
+
+        // If user is already in demo mode (has demo in ID), skip connection test
+        if (user?.id?.includes("demo")) {
+          console.log("User is in demo mode, loading demo data directly");
+          setMessage("Demo mode: Using demo data");
+          setMessageType("success");
+          loadDemoUsers();
+          loadDemoSystemSettings();
+          return;
+        }
+
+        // Test database connection for real users
+        console.log("Testing database connection...");
         const isConnected = await testDatabaseConnection();
 
         if (isConnected) {
@@ -140,13 +153,20 @@ export default function AdminPanel() {
           loadSystemSettings();
         } else {
           console.log("Database not connected, switching to demo mode");
-          setMessage("Demo mode: Using demo data (database not accessible)");
+          setMessage("Demo mode: Database not accessible, using demo data");
           setMessageType("success");
           loadDemoUsers();
           loadDemoSystemSettings();
         }
       };
-      initializeAdminPanel();
+
+      initializeAdminPanel().catch((error) => {
+        console.error("Failed to initialize admin panel:", error);
+        setMessage("Demo mode: Initialization failed, using demo data");
+        setMessageType("success");
+        loadDemoUsers();
+        loadDemoSystemSettings();
+      });
     }
   }, [user]);
 
