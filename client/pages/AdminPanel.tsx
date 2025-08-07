@@ -337,9 +337,18 @@ export default function AdminPanel() {
         </div>
         <Button
           variant="outline"
-          onClick={() => {
-            loadUsers();
-            loadSystemSettings();
+          onClick={async () => {
+            setLoading(true);
+            try {
+              await Promise.all([loadUsers(), loadSystemSettings()]);
+              setMessage('Data refreshed successfully');
+              setMessageType('success');
+            } catch (error: any) {
+              setMessage('Error refreshing data: ' + error.message);
+              setMessageType('error');
+            } finally {
+              setLoading(false);
+            }
           }}
           disabled={loading}
         >
