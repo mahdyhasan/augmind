@@ -483,6 +483,19 @@ export default function AdminPanel() {
       setMessage("");
       console.log("Updating system settings...");
 
+      // Check if we're in demo mode
+      if (user?.id?.includes("demo")) {
+        console.log("Demo mode: Simulating system settings update");
+
+        // Simulate a brief delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        setMessage("Demo mode: System settings updated successfully! (changes are simulated)");
+        setMessageType("success");
+        return;
+      }
+
+      // Real database mode
       // Update each setting using upsert
       const updates = [
         {
