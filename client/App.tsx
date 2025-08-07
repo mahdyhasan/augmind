@@ -11,6 +11,10 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AIChat from "./pages/AIChat";
+import AdminPanel from "./pages/AdminPanel";
+import ClientProspect from "./pages/ClientProspect";
+import Uploads from "./pages/Uploads";
+import PresetQuestions from "./pages/PresetQuestions";
 import PlaceholderPage from "./components/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
