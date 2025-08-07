@@ -89,107 +89,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchUserProfile = async (authUser: User) => {
     console.log('AuthProvider: Fetching profile for user:', authUser.email);
 
-    try {
-      // Add timeout to prevent hanging
-      const profilePromise = supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
+    // For demo purposes, create user object based on known emails
+    const isAdmin = authUser.email === 'admin@augmind.com';
+    const isKnownUser = authUser.email === 'admin@augmind.com' || authUser.email === 'user@augmind.com';
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
-      );
+    const userObject = {
+      id: authUser.id,
+      username: isAdmin ? 'admin' : authUser.email?.split('@')[0] || 'user',
+      role: (isAdmin ? 'Admin' : 'Business Dev User') as const,
+      name: isAdmin ? 'Administrator' : (authUser.user_metadata?.full_name || 'User'),
+      email: authUser.email || '',
+    };
 
-      const result = await Promise.race([profilePromise, timeoutPromise]);
-      const { data: profile, error } = result as any;
+    console.log('AuthProvider: Setting user:', userObject);
+    setUser(userObject);
+    setLoading(false);
 
-      if (error) {
-        console.error('Error fetching user profile:', error.message, error);
+    // Optionally try to fetch/create profile in background (non-blocking)
+    if (isKnownUser) {
+      try {
+        const { data: profile, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
 
-        // If profile doesn't exist (PGRST116 error), create one
-        if (error.code === 'PGRST116') {
-          console.log('Creating user profile for new user...');
-
-          const isAdmin = authUser.email?.includes('admin');
-          const newProfile = {
-            id: authUser.id,
-            username: authUser.user_metadata?.username || authUser.email?.split('@')[0] || 'user',
-            full_name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-            role: (isAdmin ? 'Admin' : 'Business Dev User') as const,
-          };
-
-          const { data: createdProfile, error: createError } = await supabase
-            .from('user_profiles')
-            .insert(newProfile)
-            .select()
-            .single();
-
-          if (createError) {
-            console.error('Error creating user profile:', createError);
-            // Fall back to basic user object
-            const fallbackUser = {
-              id: authUser.id,
-              username: newProfile.username,
-              role: newProfile.role,
-              name: newProfile.full_name,
-              email: authUser.email || '',
-            };
-            console.log('Setting fallback user:', fallbackUser);
-            setUser(fallbackUser);
-          } else {
-            const newUser = {
-              id: createdProfile.id,
-              username: createdProfile.username,
-              role: createdProfile.role,
-              name: createdProfile.full_name,
-              email: authUser.email || '',
-              profile: createdProfile,
-            };
-            console.log('Setting new user with created profile:', newUser);
-            setUser(newUser);
-          }
-        } else {
-          // Other error, create basic user object
-          const isAdmin = authUser.email?.includes('admin');
-          const basicUser = {
-            id: authUser.id,
-            username: authUser.email?.split('@')[0] || 'user',
-            role: (isAdmin ? 'Admin' : 'Business Dev User') as const,
-            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-            email: authUser.email || '',
-          };
-          console.log('Setting basic user due to error:', basicUser);
-          setUser(basicUser);
+        if (!error && profile) {
+          // Update user with profile data
+          setUser(prev => prev ? {
+            ...prev,
+            username: profile.username,
+            role: profile.role,
+            name: profile.full_name,
+            profile
+          } : null);
+          console.log('AuthProvider: Updated user with profile data');
         }
-      } else {
-        const existingUser = {
-          id: profile.id,
-          username: profile.username,
-          role: profile.role,
-          name: profile.full_name,
-          email: authUser.email || '',
-          profile,
-        };
-        console.log('Setting existing user:', existingUser);
-        setUser(existingUser);
+      } catch (error) {
+        console.log('AuthProvider: Background profile fetch failed (non-critical):', error);
       }
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-      // Create basic user object as fallback
-      const isAdmin = authUser.email?.includes('admin');
-      const fallbackUser = {
-        id: authUser.id,
-        username: authUser.email?.split('@')[0] || 'user',
-        role: (isAdmin ? 'Admin' : 'Business Dev User') as const,
-        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
-        email: authUser.email || '',
-      };
-      console.log('Setting fallback user due to exception:', fallbackUser);
-      setUser(fallbackUser);
-    } finally {
-      console.log('AuthProvider: Setting loading to false');
-      setLoading(false);
     }
   };
 
