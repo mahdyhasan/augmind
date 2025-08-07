@@ -382,21 +382,56 @@ export default function AIChat() {
       <div className="flex-1 flex flex-col">
         {/* Chat header */}
         <div className="p-4 border-b bg-white">
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarFallback className="bg-primary text-white">
-                <Bot className="h-5 w-5" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="font-semibold text-gray-900">
-                AI Strategic Assistant
-              </h2>
-              <p className="text-sm text-gray-600">
-                Always ready to help with your business strategy
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar>
+                <AvatarFallback className="bg-primary text-white">
+                  <Bot className="h-5 w-5" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  AI Strategic Assistant
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Always ready to help with your business strategy
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Badge variant={
+                connectionStatus === "connected" ? "default" :
+                connectionStatus === "testing" ? "secondary" : "destructive"
+              }>
+                {connectionStatus === "connected" && <Wifi className="h-3 w-3 mr-1" />}
+                {connectionStatus === "disconnected" && <WifiOff className="h-3 w-3 mr-1" />}
+                {connectionStatus === "testing" && <RefreshCw className="h-3 w-3 mr-1 animate-spin" />}
+                {connectionStatus === "connected" ? "Live Data" :
+                 connectionStatus === "testing" ? "Testing..." : "Offline Mode"}
+              </Badge>
+
+              {connectionStatus === "disconnected" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testConnection}
+                  disabled={connectionStatus === "testing"}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+              )}
             </div>
           </div>
+
+          {error && (
+            <Alert className="mt-3">
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         {/* Chat messages */}
