@@ -55,6 +55,8 @@ export default function Login() {
         const result = await login(email, password);
         if (!result.success) {
           setError(result.error || "Invalid email or password");
+        } else if ((result as any).demoMode) {
+          setSuccess("Demo mode activated! Signed in successfully.");
         }
       }
     } catch (err: any) {
