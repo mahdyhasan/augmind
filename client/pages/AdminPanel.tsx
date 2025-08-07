@@ -481,6 +481,31 @@ export default function AdminPanel() {
       setMessage("");
       console.log("Updating system settings...");
 
+      // Validate settings before saving
+      if (systemSettings.default_user_tokens < 100 || systemSettings.default_user_tokens > 100000) {
+        setMessage("Default user tokens must be between 100 and 100,000");
+        setMessageType("error");
+        return;
+      }
+
+      if (systemSettings.default_user_words < 10 || systemSettings.default_user_words > 10000) {
+        setMessage("Default user words must be between 10 and 10,000");
+        setMessageType("error");
+        return;
+      }
+
+      if (systemSettings.max_tokens_per_request < 100 || systemSettings.max_tokens_per_request > 10000) {
+        setMessage("Max tokens per request must be between 100 and 10,000");
+        setMessageType("error");
+        return;
+      }
+
+      if (systemSettings.daily_request_limit < 1 || systemSettings.daily_request_limit > 10000) {
+        setMessage("Daily request limit must be between 1 and 10,000");
+        setMessageType("error");
+        return;
+      }
+
       // Update each setting using upsert
       const updates = [
         {
