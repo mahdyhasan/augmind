@@ -205,7 +205,8 @@ export default function AdminPanel() {
         }
       }
     } catch (error: any) {
-      console.error("Error in loadUsers:", error);
+      const errorMsg = error?.message || error?.toString() || 'Network error';
+      console.error("Error in loadUsers:", errorMsg);
       console.log("Network error, switching to demo data for users");
       loadDemoUsers();
     } finally {
