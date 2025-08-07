@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         .single();
 
       if (error) {
-        console.error('Error fetching user profile:', error);
+        console.error('Error fetching user profile:', error.message, error);
         // If no profile exists, this might be a newly created user
         setUser({
           id: authUser.id,
