@@ -11,7 +11,9 @@ console.log("VITE_SUPABASE_ANON_KEY:", supabaseAnonKey ? "✓ Set" : "✗ Missin
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("Missing Supabase environment variables!");
   console.error("Expected: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY");
-  throw new Error("Missing Supabase environment variables. Please check your environment configuration.");
+  throw new Error(
+    "Missing Supabase environment variables. Please check your environment configuration.",
+  );
 }
 
 // Validate URL format
@@ -33,8 +35,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         ...options,
         // Add timeout to prevent hanging
         signal: AbortSignal.timeout(10000), // 10 second timeout
-      }).catch(error => {
-        console.error('Supabase fetch error:', error);
+      }).catch((error) => {
+        console.error("Supabase fetch error:", error);
         // Just re-throw the original error to let the auth context handle it
         throw error;
       });
@@ -47,11 +49,13 @@ export let isSupabaseConnected = true;
 
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.from('user_profiles').select('count', { count: 'exact', head: true });
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("count", { count: "exact", head: true });
     isSupabaseConnected = !error;
     return !error;
   } catch (error) {
-    console.warn('Supabase connection test failed:', error);
+    console.warn("Supabase connection test failed:", error);
     isSupabaseConnected = false;
     return false;
   }

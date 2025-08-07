@@ -102,17 +102,21 @@ export default function AdminPanel() {
       console.log("Testing database connection...");
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection test timeout')), 3000)
+        setTimeout(() => reject(new Error("Connection test timeout")), 3000),
       );
 
       const queryPromise = supabase
         .from("user_profiles")
         .select("count", { count: "exact", head: true });
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (error) {
-        const errorMsg = error?.message || error?.toString() || 'Unknown database error';
+        const errorMsg =
+          error?.message || error?.toString() || "Unknown database error";
         console.error("Database connection test failed:", errorMsg);
         return false;
       } else {
@@ -120,7 +124,8 @@ export default function AdminPanel() {
         return true;
       }
     } catch (error: any) {
-      const errorMsg = error?.message || error?.toString() || 'Unknown connection error';
+      const errorMsg =
+        error?.message || error?.toString() || "Unknown connection error";
       console.error("Database connection test error:", errorMsg);
       return false;
     }
@@ -177,7 +182,7 @@ export default function AdminPanel() {
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 5000)
+        setTimeout(() => reject(new Error("Request timeout")), 5000),
       );
 
       const queryPromise = supabase
@@ -185,10 +190,14 @@ export default function AdminPanel() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (error) {
-        const errorMsg = error?.message || error?.toString() || 'Unknown error loading users';
+        const errorMsg =
+          error?.message || error?.toString() || "Unknown error loading users";
         console.error("Error loading users:", errorMsg);
         console.log("Switching to demo data for users");
         loadDemoUsers();
@@ -205,7 +214,7 @@ export default function AdminPanel() {
         }
       }
     } catch (error: any) {
-      const errorMsg = error?.message || error?.toString() || 'Network error';
+      const errorMsg = error?.message || error?.toString() || "Network error";
       console.error("Error in loadUsers:", errorMsg);
       console.log("Network error, switching to demo data for users");
       loadDemoUsers();
@@ -228,7 +237,9 @@ export default function AdminPanel() {
         daily_requests: 15,
         last_request_date: new Date().toISOString(),
         status: "Active",
-        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
@@ -243,7 +254,9 @@ export default function AdminPanel() {
         daily_requests: 8,
         last_request_date: new Date().toISOString(),
         status: "Active",
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         updated_at: new Date().toISOString(),
       },
       {
@@ -256,11 +269,15 @@ export default function AdminPanel() {
         tokens_used: 320,
         words_used: 150,
         daily_requests: 4,
-        last_request_date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        last_request_date: new Date(
+          Date.now() - 2 * 60 * 60 * 1000,
+        ).toISOString(),
         status: "Active",
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         updated_at: new Date().toISOString(),
-      }
+      },
     ];
 
     setUsers(demoUsers);
@@ -276,17 +293,23 @@ export default function AdminPanel() {
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Settings request timeout')), 5000)
+        setTimeout(() => reject(new Error("Settings request timeout")), 5000),
       );
 
       const queryPromise = supabase
         .from("system_settings")
         .select("setting_key, setting_value");
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (error) {
-        const errorMsg = error?.message || error?.toString() || 'Unknown error loading settings';
+        const errorMsg =
+          error?.message ||
+          error?.toString() ||
+          "Unknown error loading settings";
         console.error("Error loading system settings:", errorMsg);
         console.log("Switching to demo data for system settings");
         loadDemoSystemSettings();
@@ -318,7 +341,7 @@ export default function AdminPanel() {
         }
       }
     } catch (error: any) {
-      const errorMsg = error?.message || error?.toString() || 'Network error';
+      const errorMsg = error?.message || error?.toString() || "Network error";
       console.error("Error in loadSystemSettings:", errorMsg);
       console.log("Network error, switching to demo data for system settings");
       loadDemoSystemSettings();
@@ -383,7 +406,7 @@ export default function AdminPanel() {
         };
 
         // Add to existing users
-        setUsers(prev => [newDemoUser, ...prev]);
+        setUsers((prev) => [newDemoUser, ...prev]);
         setMessage("Demo mode: User created successfully!");
         setMessageType("success");
 
@@ -514,9 +537,11 @@ export default function AdminPanel() {
         console.log("Demo mode: Simulating system settings update");
 
         // Simulate a brief delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        setMessage("Demo mode: System settings updated successfully! (changes are simulated)");
+        setMessage(
+          "Demo mode: System settings updated successfully! (changes are simulated)",
+        );
         setMessageType("success");
         return;
       }
@@ -553,7 +578,10 @@ export default function AdminPanel() {
         try {
           // Add timeout to each upsert operation
           const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`Timeout updating ${update.key}`)), 8000)
+            setTimeout(
+              () => reject(new Error(`Timeout updating ${update.key}`)),
+              8000,
+            ),
           );
 
           const upsertPromise = supabase.from("system_settings").upsert(
@@ -568,7 +596,10 @@ export default function AdminPanel() {
             },
           );
 
-          const { error } = await Promise.race([upsertPromise, timeoutPromise]) as any;
+          const { error } = (await Promise.race([
+            upsertPromise,
+            timeoutPromise,
+          ])) as any;
 
           if (error) {
             console.error(`Error updating ${update.key}:`, error);

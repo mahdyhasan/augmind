@@ -84,7 +84,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
       .catch((error) => {
         console.error("AuthProvider: Error getting session:", error);
-        console.log("AuthProvider: Continuing with no session due to network issues");
+        console.log(
+          "AuthProvider: Continuing with no session due to network issues",
+        );
         clearTimeout(loadingTimeout);
         setLoading(false);
       });
@@ -174,16 +176,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     password: string,
   ): Promise<{ success: boolean; error?: string }> => {
     console.log("Login: Starting login process for:", email);
-    console.log("Login: Supabase URL check:", import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗");
+    console.log(
+      "Login: Supabase URL check:",
+      import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗",
+    );
 
     // Demo credentials for development when Supabase is not accessible
     const demoCredentials = [
       { email: "admin@augmind.com", password: "admin123" },
-      { email: "user@augmind.com", password: "user123" }
+      { email: "user@augmind.com", password: "user123" },
     ];
 
-    const isDemoLogin = demoCredentials.some(cred =>
-      cred.email === email && cred.password === password
+    const isDemoLogin = demoCredentials.some(
+      (cred) => cred.email === email && cred.password === password,
     );
 
     // If using demo credentials, try Supabase first but fallback to demo quickly
@@ -198,20 +203,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Demo mode: Quick timeout')), 3000)
+          setTimeout(() => reject(new Error("Demo mode: Quick timeout")), 3000),
         );
 
-        const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+        const { data, error } = (await Promise.race([
+          authPromise,
+          timeoutPromise,
+        ])) as any;
 
         if (error) {
-          console.log("Login: Supabase auth failed for demo user, switching to demo mode");
+          console.log(
+            "Login: Supabase auth failed for demo user, switching to demo mode",
+          );
           return await handleDemoLogin(email);
         }
 
         console.log("Login: Supabase auth successful for demo user");
         return { success: true };
       } catch (error: any) {
-        console.log("Login: Network/timeout error for demo user, using demo mode:", error.message);
+        console.log(
+          "Login: Network/timeout error for demo user, using demo mode:",
+          error.message,
+        );
         return await handleDemoLogin(email);
       }
     }
@@ -228,31 +241,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: error.message };
       }
 
-      console.log("Login: Auth successful, user will be set via onAuthStateChange");
+      console.log(
+        "Login: Auth successful, user will be set via onAuthStateChange",
+      );
       return { success: true };
     } catch (error: any) {
       console.error("Login: Exception during login:", error);
 
       // Handle specific fetch errors
-      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+      if (
+        error.name === "TypeError" &&
+        error.message.includes("Failed to fetch")
+      ) {
         return {
           success: false,
-          error: "Network connection failed. Please check your internet connection and try again."
+          error:
+            "Network connection failed. Please check your internet connection and try again.",
         };
       }
 
-      if (error.message.includes("fetch") || error.message.includes("timeout") || error.message.includes("connection")) {
+      if (
+        error.message.includes("fetch") ||
+        error.message.includes("timeout") ||
+        error.message.includes("connection")
+      ) {
         return {
           success: false,
-          error: "Unable to connect to authentication service. Please try again later."
+          error:
+            "Unable to connect to authentication service. Please try again later.",
         };
       }
 
-      return { success: false, error: error.message || "An unexpected error occurred during login." };
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred during login.",
+      };
     }
   };
 
-  const handleDemoLogin = async (email: string): Promise<{ success: boolean; error?: string; demoMode?: boolean }> => {
+  const handleDemoLogin = async (
+    email: string,
+  ): Promise<{ success: boolean; error?: string; demoMode?: boolean }> => {
     try {
       console.log("handleDemoLogin: Creating demo user for:", email);
 
@@ -291,7 +320,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Add timeout for signup requests
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Signup request timeout')), 10000)
+        setTimeout(() => reject(new Error("Signup request timeout")), 10000),
       );
 
       const signupPromise = supabase.auth.signUp({
@@ -305,7 +334,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       });
 
-      const { data, error: authError } = await Promise.race([signupPromise, timeoutPromise]) as any;
+      const { data, error: authError } = (await Promise.race([
+        signupPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (authError) {
         console.error("Signup: Auth error:", authError.message);
@@ -318,19 +350,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           // Create user profile with timeout
           const profileTimeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Profile creation timeout')), 8000)
+            setTimeout(
+              () => reject(new Error("Profile creation timeout")),
+              8000,
+            ),
           );
 
-          const profilePromise = supabase
-            .from("user_profiles")
-            .insert({
-              id: data.user.id,
-              username: userData.username,
-              full_name: userData.full_name,
-              role: userData.role || "Business Dev User",
-            });
+          const profilePromise = supabase.from("user_profiles").insert({
+            id: data.user.id,
+            username: userData.username,
+            full_name: userData.full_name,
+            role: userData.role || "Business Dev User",
+          });
 
-          const { error: profileError } = await Promise.race([profilePromise, profileTimeoutPromise]) as any;
+          const { error: profileError } = (await Promise.race([
+            profilePromise,
+            profileTimeoutPromise,
+          ])) as any;
 
           if (profileError) {
             console.error("Error creating user profile:", profileError.message);
@@ -338,7 +374,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // The profile will be created on next login attempt
             return {
               success: true,
-              error: "Account created successfully, but profile setup incomplete. You can still log in."
+              error:
+                "Account created successfully, but profile setup incomplete. You can still log in.",
             };
           } else {
             console.log("User profile created successfully");
@@ -348,7 +385,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Auth user was created but profile failed - still return success
           return {
             success: true,
-            error: "Account created successfully, but profile setup incomplete. You can still log in."
+            error:
+              "Account created successfully, but profile setup incomplete. You can still log in.",
           };
         }
       }
@@ -358,21 +396,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error("Signup: Exception during signup:", error);
 
       // Handle specific fetch errors
-      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+      if (
+        error.name === "TypeError" &&
+        error.message.includes("Failed to fetch")
+      ) {
         return {
           success: false,
-          error: "Network connection failed. Please check your internet connection and try again."
+          error:
+            "Network connection failed. Please check your internet connection and try again.",
         };
       }
 
-      if (error.message.includes("fetch") || error.message.includes("timeout") || error.message.includes("connection")) {
+      if (
+        error.message.includes("fetch") ||
+        error.message.includes("timeout") ||
+        error.message.includes("connection")
+      ) {
         return {
           success: false,
-          error: "Unable to connect to authentication service. Please try again later."
+          error:
+            "Unable to connect to authentication service. Please try again later.",
         };
       }
 
-      return { success: false, error: error.message || "An unexpected error occurred during signup." };
+      return {
+        success: false,
+        error: error.message || "An unexpected error occurred during signup.",
+      };
     }
   };
 

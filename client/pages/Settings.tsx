@@ -1,19 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Badge } from '../components/ui/badge';
-import { Separator } from '../components/ui/separator';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Progress } from '../components/ui/progress';
-import { 
-  Settings as SettingsIcon, 
-  Key, 
-  BarChart3, 
-  Save, 
-  User, 
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Progress } from "../components/ui/progress";
+import {
+  Settings as SettingsIcon,
+  Key,
+  BarChart3,
+  Save,
+  User,
   Shield,
   Zap,
   MessageSquare,
@@ -21,10 +32,10 @@ import {
   Calendar,
   TrendingUp,
   CheckCircle,
-  AlertCircle
-} from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 
 interface UsageStats {
   totalTokens: number;
@@ -51,16 +62,18 @@ interface UserLimits {
 
 export default function Settings() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('account');
+  const [activeTab, setActiveTab] = useState("account");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">(
+    "success",
+  );
 
   // Password change state
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Usage stats state
@@ -71,7 +84,7 @@ export default function Settings() {
     conversationsCount: 0,
     documentsCount: 0,
     prospectsCount: 0,
-    dailyUsage: []
+    dailyUsage: [],
   });
 
   // User limits state
@@ -81,7 +94,7 @@ export default function Settings() {
     tokensUsed: 0,
     wordsUsed: 0,
     dailyRequests: 0,
-    lastRequestDate: ''
+    lastRequestDate: "",
   });
 
   useEffect(() => {
@@ -97,49 +110,58 @@ export default function Settings() {
     try {
       // Get total usage analytics
       const { data: analytics } = await supabase
-        .from('usage_analytics')
-        .select('tokens_consumed, words_generated, action_type')
-        .eq('user_id', user.id);
+        .from("usage_analytics")
+        .select("tokens_consumed, words_generated, action_type")
+        .eq("user_id", user.id);
 
-      const totalTokens = analytics?.reduce((sum, item) => sum + (item.tokens_consumed || 0), 0) || 0;
-      const totalWords = analytics?.reduce((sum, item) => sum + (item.words_generated || 0), 0) || 0;
+      const totalTokens =
+        analytics?.reduce(
+          (sum, item) => sum + (item.tokens_consumed || 0),
+          0,
+        ) || 0;
+      const totalWords =
+        analytics?.reduce(
+          (sum, item) => sum + (item.words_generated || 0),
+          0,
+        ) || 0;
       const totalRequests = analytics?.length || 0;
 
       // Get conversations count
       const { count: conversationsCount } = await supabase
-        .from('conversations')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .from("conversations")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
 
       // Get documents count
       const documentsQuery = supabase
-        .from('documents')
-        .select('*', { count: 'exact', head: true });
-      
-      if (user.role !== 'Admin') {
-        documentsQuery.eq('uploaded_by', user.id);
+        .from("documents")
+        .select("*", { count: "exact", head: true });
+
+      if (user.role !== "Admin") {
+        documentsQuery.eq("uploaded_by", user.id);
       }
       const { count: documentsCount } = await documentsQuery;
 
       // Get prospects count
       const { count: prospectsCount } = await supabase
-        .from('client_prospects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .from("client_prospects")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
 
       // Get daily usage for last 7 days
       const { data: dailySummary } = await supabase
-        .from('daily_usage_summary')
-        .select('date, total_requests, total_tokens')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
+        .from("daily_usage_summary")
+        .select("date, total_requests, total_tokens")
+        .eq("user_id", user.id)
+        .order("date", { ascending: false })
         .limit(7);
 
-      const dailyUsage = dailySummary?.map(day => ({
-        date: day.date,
-        requests: day.total_requests || 0,
-        tokens: day.total_tokens || 0
-      })) || [];
+      const dailyUsage =
+        dailySummary?.map((day) => ({
+          date: day.date,
+          requests: day.total_requests || 0,
+          tokens: day.total_tokens || 0,
+        })) || [];
 
       setUsageStats({
         totalTokens,
@@ -148,11 +170,10 @@ export default function Settings() {
         conversationsCount: conversationsCount || 0,
         documentsCount: documentsCount || 0,
         prospectsCount: prospectsCount || 0,
-        dailyUsage
+        dailyUsage,
       });
-
     } catch (error) {
-      console.error('Error loading usage stats:', error);
+      console.error("Error loading usage stats:", error);
     }
   };
 
@@ -161,9 +182,11 @@ export default function Settings() {
 
     try {
       const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('token_limit, word_limit, tokens_used, words_used, daily_requests, last_request_date')
-        .eq('id', user.id)
+        .from("user_profiles")
+        .select(
+          "token_limit, word_limit, tokens_used, words_used, daily_requests, last_request_date",
+        )
+        .eq("id", user.id)
         .single();
 
       if (profile) {
@@ -173,56 +196,56 @@ export default function Settings() {
           tokensUsed: profile.tokens_used || 0,
           wordsUsed: profile.words_used || 0,
           dailyRequests: profile.daily_requests || 0,
-          lastRequestDate: profile.last_request_date || ''
+          lastRequestDate: profile.last_request_date || "",
         });
       }
     } catch (error) {
-      console.error('Error loading user limits:', error);
+      console.error("Error loading user limits:", error);
     }
   };
 
   const handlePasswordChange = async () => {
     if (!passwordData.newPassword || !passwordData.confirmPassword) {
-      setMessage('Please fill in all password fields');
-      setMessageType('error');
+      setMessage("Please fill in all password fields");
+      setMessageType("error");
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage('New passwords do not match');
-      setMessageType('error');
+      setMessage("New passwords do not match");
+      setMessageType("error");
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      setMessage('Password must be at least 6 characters long');
-      setMessageType('error');
+      setMessage("Password must be at least 6 characters long");
+      setMessageType("error");
       return;
     }
 
     try {
       setLoading(true);
-      setMessage('');
+      setMessage("");
 
       const { error } = await supabase.auth.updateUser({
-        password: passwordData.newPassword
+        password: passwordData.newPassword,
       });
 
       if (error) {
-        setMessage('Error changing password: ' + error.message);
-        setMessageType('error');
+        setMessage("Error changing password: " + error.message);
+        setMessageType("error");
       } else {
-        setMessage('Password changed successfully!');
-        setMessageType('success');
+        setMessage("Password changed successfully!");
+        setMessageType("success");
         setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
         });
       }
     } catch (error: any) {
-      setMessage('Error changing password: ' + error.message);
-      setMessageType('error');
+      setMessage("Error changing password: " + error.message);
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
@@ -234,9 +257,9 @@ export default function Settings() {
   };
 
   const getUsageColor = (percentage: number): string => {
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 70) return 'bg-yellow-500';
-    return 'bg-green-500';
+    if (percentage >= 90) return "bg-red-500";
+    if (percentage >= 70) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   const formatDate = (dateString: string): string => {
@@ -247,19 +270,32 @@ export default function Settings() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600">Manage your account settings and view your usage statistics</p>
+        <p className="text-gray-600">
+          Manage your account settings and view your usage statistics
+        </p>
       </div>
 
       {message && (
-        <Alert variant={messageType === 'error' ? 'destructive' : 'default'} className={messageType === 'success' ? 'border-green-200 bg-green-50' : ''}>
+        <Alert
+          variant={messageType === "error" ? "destructive" : "default"}
+          className={
+            messageType === "success" ? "border-green-200 bg-green-50" : ""
+          }
+        >
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription className={messageType === 'success' ? 'text-green-800' : ''}>
+          <AlertDescription
+            className={messageType === "success" ? "text-green-800" : ""}
+          >
             {message}
           </AlertDescription>
         </Alert>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="account" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
@@ -285,29 +321,35 @@ export default function Settings() {
                   <User className="h-5 w-5" />
                   <span>Profile Information</span>
                 </CardTitle>
-                <CardDescription>Your account details and role information</CardDescription>
+                <CardDescription>
+                  Your account details and role information
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input value={user?.name || ''} disabled />
+                  <Input value={user?.name || ""} disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input value={user?.email || ''} disabled />
+                  <Input value={user?.email || ""} disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>Username</Label>
-                  <Input value={user?.username || ''} disabled />
+                  <Input value={user?.username || ""} disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>Role</Label>
                   <div className="flex items-center space-x-2">
-                    <Badge variant={user?.role === 'Admin' ? 'default' : 'secondary'}>
+                    <Badge
+                      variant={user?.role === "Admin" ? "default" : "secondary"}
+                    >
                       {user?.role}
                     </Badge>
-                    {user?.role === 'Admin' && (
-                      <span className="text-sm text-gray-600">Full system access</span>
+                    {user?.role === "Admin" && (
+                      <span className="text-sm text-gray-600">
+                        Full system access
+                      </span>
                     )}
                   </div>
                 </div>
@@ -321,34 +363,47 @@ export default function Settings() {
                   <Zap className="h-5 w-5" />
                   <span>Your Limits</span>
                 </CardTitle>
-                <CardDescription>Current usage against your allocated limits</CardDescription>
+                <CardDescription>
+                  Current usage against your allocated limits
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <Label>Token Usage</Label>
                     <span className="text-sm text-gray-600">
-                      {userLimits.tokensUsed.toLocaleString()} / {userLimits.tokenLimit.toLocaleString()}
+                      {userLimits.tokensUsed.toLocaleString()} /{" "}
+                      {userLimits.tokenLimit.toLocaleString()}
                     </span>
                   </div>
-                  <Progress 
-                    value={getUsagePercentage(userLimits.tokensUsed, userLimits.tokenLimit)} 
+                  <Progress
+                    value={getUsagePercentage(
+                      userLimits.tokensUsed,
+                      userLimits.tokenLimit,
+                    )}
                     className="w-full"
                   />
-                  <div className={`h-2 rounded-full ${getUsageColor(getUsagePercentage(userLimits.tokensUsed, userLimits.tokenLimit))}`} 
-                       style={{ width: `${getUsagePercentage(userLimits.tokensUsed, userLimits.tokenLimit)}%` }}>
-                  </div>
+                  <div
+                    className={`h-2 rounded-full ${getUsageColor(getUsagePercentage(userLimits.tokensUsed, userLimits.tokenLimit))}`}
+                    style={{
+                      width: `${getUsagePercentage(userLimits.tokensUsed, userLimits.tokenLimit)}%`,
+                    }}
+                  ></div>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <Label>Word Generation</Label>
                     <span className="text-sm text-gray-600">
-                      {userLimits.wordsUsed.toLocaleString()} / {userLimits.wordLimit.toLocaleString()}
+                      {userLimits.wordsUsed.toLocaleString()} /{" "}
+                      {userLimits.wordLimit.toLocaleString()}
                     </span>
                   </div>
-                  <Progress 
-                    value={getUsagePercentage(userLimits.wordsUsed, userLimits.wordLimit)} 
+                  <Progress
+                    value={getUsagePercentage(
+                      userLimits.wordsUsed,
+                      userLimits.wordLimit,
+                    )}
                     className="w-full"
                   />
                 </div>
@@ -361,7 +416,10 @@ export default function Settings() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-500">
-                    Last activity: {userLimits.lastRequestDate ? formatDate(userLimits.lastRequestDate) : 'Never'}
+                    Last activity:{" "}
+                    {userLimits.lastRequestDate
+                      ? formatDate(userLimits.lastRequestDate)
+                      : "Never"}
                   </p>
                 </div>
               </CardContent>
@@ -377,8 +435,12 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Tokens</p>
-                    <p className="text-2xl font-bold text-gray-900">{usageStats.totalTokens.toLocaleString()}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Total Tokens
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {usageStats.totalTokens.toLocaleString()}
+                    </p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-full">
                     <Zap className="h-6 w-6 text-blue-600" />
@@ -391,8 +453,12 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Conversations</p>
-                    <p className="text-2xl font-bold text-gray-900">{usageStats.conversationsCount}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Conversations
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {usageStats.conversationsCount}
+                    </p>
                   </div>
                   <div className="bg-green-100 p-3 rounded-full">
                     <MessageSquare className="h-6 w-6 text-green-600" />
@@ -405,8 +471,12 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Documents</p>
-                    <p className="text-2xl font-bold text-gray-900">{usageStats.documentsCount}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Documents
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {usageStats.documentsCount}
+                    </p>
                   </div>
                   <div className="bg-purple-100 p-3 rounded-full">
                     <Upload className="h-6 w-6 text-purple-600" />
@@ -419,8 +489,12 @@ export default function Settings() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Requests</p>
-                    <p className="text-2xl font-bold text-gray-900">{usageStats.totalRequests}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Total Requests
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {usageStats.totalRequests}
+                    </p>
                   </div>
                   <div className="bg-orange-100 p-3 rounded-full">
                     <TrendingUp className="h-6 w-6 text-orange-600" />
@@ -437,20 +511,31 @@ export default function Settings() {
                 <Calendar className="h-5 w-5" />
                 <span>Daily Usage (Last 7 Days)</span>
               </CardTitle>
-              <CardDescription>Your daily activity and token consumption</CardDescription>
+              <CardDescription>
+                Your daily activity and token consumption
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {usageStats.dailyUsage.length > 0 ? (
                 <div className="space-y-4">
                   {usageStats.dailyUsage.map((day, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <Calendar className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium">{formatDate(day.date)}</span>
+                        <span className="font-medium">
+                          {formatDate(day.date)}
+                        </span>
                       </div>
                       <div className="flex items-center space-x-4 text-sm">
-                        <span className="text-gray-600">{day.requests} requests</span>
-                        <span className="text-gray-600">{day.tokens.toLocaleString()} tokens</span>
+                        <span className="text-gray-600">
+                          {day.requests} requests
+                        </span>
+                        <span className="text-gray-600">
+                          {day.tokens.toLocaleString()} tokens
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -458,8 +543,12 @@ export default function Settings() {
               ) : (
                 <div className="text-center py-8">
                   <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No usage data yet</h3>
-                  <p className="text-gray-600">Start using Augmind to see your usage statistics here</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No usage data yet
+                  </h3>
+                  <p className="text-gray-600">
+                    Start using Augmind to see your usage statistics here
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -476,7 +565,9 @@ export default function Settings() {
                   <Key className="h-5 w-5" />
                   <span>Change Password</span>
                 </CardTitle>
-                <CardDescription>Update your account password for security</CardDescription>
+                <CardDescription>
+                  Update your account password for security
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -485,7 +576,12 @@ export default function Settings() {
                     id="newPassword"
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        newPassword: e.target.value,
+                      })
+                    }
                     placeholder="Enter new password"
                     minLength={6}
                   />
@@ -497,13 +593,22 @@ export default function Settings() {
                     id="confirmPassword"
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    onChange={(e) =>
+                      setPasswordData({
+                        ...passwordData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
                     placeholder="Confirm new password"
                     minLength={6}
                   />
                 </div>
 
-                <Button onClick={handlePasswordChange} disabled={loading} className="w-full">
+                <Button
+                  onClick={handlePasswordChange}
+                  disabled={loading}
+                  className="w-full"
+                >
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -533,7 +638,9 @@ export default function Settings() {
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium">Email Verified</p>
-                    <p className="text-sm text-gray-600">Your email address is verified</p>
+                    <p className="text-sm text-gray-600">
+                      Your email address is verified
+                    </p>
                   </div>
                 </div>
 
@@ -541,7 +648,9 @@ export default function Settings() {
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium">Secure Authentication</p>
-                    <p className="text-sm text-gray-600">Using Supabase secure authentication</p>
+                    <p className="text-sm text-gray-600">
+                      Using Supabase secure authentication
+                    </p>
                   </div>
                 </div>
 
@@ -549,7 +658,9 @@ export default function Settings() {
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium">Data Encryption</p>
-                    <p className="text-sm text-gray-600">All data is encrypted in transit and at rest</p>
+                    <p className="text-sm text-gray-600">
+                      All data is encrypted in transit and at rest
+                    </p>
                   </div>
                 </div>
 
