@@ -165,10 +165,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <PlaceholderPage
-                title="Settings"
-                description="Manage your account settings, change password, and view usage statistics."
-              />
+              <Settings />
             </DashboardLayout>
           </ProtectedRoute>
         }
