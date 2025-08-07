@@ -286,7 +286,8 @@ export default function AdminPanel() {
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
-        console.error("Error loading system settings:", error);
+        const errorMsg = error?.message || error?.toString() || 'Unknown error loading settings';
+        console.error("Error loading system settings:", errorMsg);
         console.log("Switching to demo data for system settings");
         loadDemoSystemSettings();
         return;
