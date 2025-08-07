@@ -181,55 +181,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗",
     );
 
-    // Demo credentials for development when Supabase is not accessible
-    const demoCredentials = [
-      { email: "admin@augmind.com", password: "admin123" },
-      { email: "user@augmind.com", password: "user123" },
-    ];
-
-    const isDemoLogin = demoCredentials.some(
-      (cred) => cred.email === email && cred.password === password,
-    );
-
-    // If using demo credentials, try Supabase first but fallback to demo quickly
-    if (isDemoLogin) {
-      try {
-        console.log("Login: Attempting Supabase auth for demo user...");
-
-        // Create a promise that rejects quickly for demo users if network fails
-        const authPromise = supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Demo mode: Quick timeout")), 3000),
-        );
-
-        const { data, error } = (await Promise.race([
-          authPromise,
-          timeoutPromise,
-        ])) as any;
-
-        if (error) {
-          console.log(
-            "Login: Supabase auth failed for demo user, switching to demo mode",
-          );
-          return await handleDemoLogin(email);
-        }
-
-        console.log("Login: Supabase auth successful for demo user");
-        return { success: true };
-      } catch (error: any) {
-        console.log(
-          "Login: Network/timeout error for demo user, using demo mode:",
-          error.message,
-        );
-        return await handleDemoLogin(email);
-      }
-    }
-
-    // For non-demo credentials, use normal Supabase authentication
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
