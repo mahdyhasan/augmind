@@ -174,6 +174,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       console.log("Login: Starting login process for:", email);
+      console.log("Login: Supabase URL check:", import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗");
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -190,8 +191,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       );
       return { success: true };
     } catch (error: any) {
-      console.log("Login: Exception during login:", error.message);
-      return { success: false, error: error.message };
+      console.error("Login: Exception during login:", error);
+
+      // Handle specific fetch errors
+      if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+        return {
+          success: false,
+          error: "Network connection failed. Please check your internet connection and try again."
+        };
+      }
+
+      if (error.message.includes("fetch")) {
+        return {
+          success: false,
+          error: "Unable to connect to authentication service. Please try again later."
+        };
+      }
+
+      return { success: false, error: error.message || "An unexpected error occurred during login." };
     }
   };
 
