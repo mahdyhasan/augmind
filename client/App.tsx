@@ -48,6 +48,8 @@ function AppRoutes() {
         }
       />
 
+      <Route path="/setup" element={<AdminSetup />} />
+
       {/* Protected routes with dashboard layout */}
       <Route
         path="/dashboard"
