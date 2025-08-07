@@ -236,8 +236,8 @@ export default function AdminPanel() {
           error?.toString() ||
           "Unknown error loading settings";
         console.error("Error loading system settings:", errorMsg);
-        console.log("Switching to demo data for system settings");
-        loadDemoSystemSettings();
+        setMessage("Error loading system settings: " + errorMsg);
+        setMessageType("error");
         return;
       } else {
         console.log("System settings loaded:", data);
