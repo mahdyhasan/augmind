@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase, UserProfile } from "../lib/supabase";
+import { DataStatusIndicator } from "../components/DataStatusIndicator";
 
 interface SystemSettings {
   default_user_tokens: number;
