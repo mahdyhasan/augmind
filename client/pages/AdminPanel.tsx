@@ -323,47 +323,6 @@ export default function AdminPanel() {
       setLoading(true);
       setMessage("");
 
-      // Check if we're in demo mode (if current user has demo ID)
-      if (user?.id?.includes("demo")) {
-        console.log("Demo mode: Simulating user creation");
-
-        // Create a new demo user
-        const newDemoUser: UserProfile = {
-          id: `demo-user-${Date.now()}`,
-          username: newUser.username,
-          full_name: newUser.full_name,
-          role: newUser.role,
-          token_limit: newUser.token_limit,
-          word_limit: newUser.word_limit,
-          tokens_used: 0,
-          words_used: 0,
-          daily_requests: 0,
-          last_request_date: new Date().toISOString(),
-          status: "Active",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-
-        // Add to existing users
-        setUsers((prev) => [newDemoUser, ...prev]);
-        setMessage("Demo mode: User created successfully!");
-        setMessageType("success");
-
-        // Reset form
-        setNewUser({
-          email: "",
-          password: "",
-          username: "",
-          full_name: "",
-          role: "Business Dev User",
-          token_limit: 5000,
-          word_limit: 1000,
-        });
-
-        return;
-      }
-
-      // Real database mode
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: newUser.email,
