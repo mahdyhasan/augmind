@@ -27,6 +27,24 @@ import { Separator } from "../components/ui/separator";
 import { Textarea } from "../components/ui/textarea";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
+import {
   UserPlus,
   Key,
   Gauge,
