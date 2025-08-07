@@ -118,56 +118,62 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchUserProfile = async (authUser: User) => {
     console.log("AuthProvider: Fetching profile for user:", authUser.email);
 
-    // For demo purposes, create user object based on known emails
-    const isAdmin = authUser.email === "admin@augmind.com";
-    const isKnownUser =
-      authUser.email === "admin@augmind.com" ||
-      authUser.email === "user@augmind.com";
+    try {
+      // Fetch user profile from database
+      const { data: profile, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
 
-    const userObject = {
-      id: authUser.id,
-      username: isAdmin ? "admin" : authUser.email?.split("@")[0] || "user",
-      role: (isAdmin ? "Admin" : "Business Dev User") as const,
-      name: isAdmin
-        ? "Administrator"
-        : authUser.user_metadata?.full_name || "User",
-      email: authUser.email || "",
-    };
+      if (error) {
+        console.error("AuthProvider: Error fetching profile:", error);
 
-    console.log("AuthProvider: Setting user:", userObject);
-    setUser(userObject);
-    setLoading(false);
+        // If profile doesn't exist, create a basic user object from auth metadata
+        const userObject = {
+          id: authUser.id,
+          username: authUser.email?.split("@")[0] || "user",
+          role: "Business Dev User" as const,
+          name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+          email: authUser.email || "",
+        };
 
-    // Optionally try to fetch/create profile in background (non-blocking)
-    if (isKnownUser) {
-      try {
-        const { data: profile, error } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("id", authUser.id)
-          .single();
-
-        if (!error && profile) {
-          // Update user with profile data
-          setUser((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  username: profile.username,
-                  role: profile.role,
-                  name: profile.full_name,
-                  profile,
-                }
-              : null,
-          );
-          console.log("AuthProvider: Updated user with profile data");
-        }
-      } catch (error) {
-        console.log(
-          "AuthProvider: Background profile fetch failed (non-critical):",
-          error,
-        );
+        console.log("AuthProvider: Profile not found, using auth metadata:", userObject);
+        setUser(userObject);
+        setLoading(false);
+        return;
       }
+
+      if (profile) {
+        // Create user object from database profile
+        const userObject = {
+          id: profile.id,
+          username: profile.username,
+          role: profile.role,
+          name: profile.full_name,
+          email: authUser.email || "",
+          profile,
+        };
+
+        console.log("AuthProvider: Setting user from database profile:", userObject);
+        setUser(userObject);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("AuthProvider: Exception fetching profile:", error);
+
+      // Fallback to basic user object from auth
+      const userObject = {
+        id: authUser.id,
+        username: authUser.email?.split("@")[0] || "user",
+        role: "Business Dev User" as const,
+        name: authUser.user_metadata?.full_name || "User",
+        email: authUser.email || "",
+      };
+
+      console.log("AuthProvider: Using fallback user object:", userObject);
+      setUser(userObject);
+      setLoading(false);
     }
   };
 
