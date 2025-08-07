@@ -204,23 +204,6 @@ export default function Login() {
               </button>
             </div>
 
-            {!isSignUp && (
-              <div className="mt-6 text-center text-sm text-gray-600">
-                <div className="mb-2">Demo Account:</div>
-                <div className="space-y-1 text-xs">
-                  <div>
-                    Email:{" "}
-                    <code className="bg-gray-100 px-1 rounded">
-                      admin@augmind.com
-                    </code>
-                  </div>
-                  <div>
-                    Password:{" "}
-                    <code className="bg-gray-100 px-1 rounded">admin123</code>
-                  </div>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
