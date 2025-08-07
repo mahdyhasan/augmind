@@ -86,7 +86,7 @@ export default function AdminPanel() {
 
   const loadUsers = async () => {
     try {
-      setLoading(true);
+      console.log('Loading users...');
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -97,14 +97,17 @@ export default function AdminPanel() {
         setMessage('Error loading users: ' + error.message);
         setMessageType('error');
       } else {
+        console.log('Users loaded:', data);
         setUsers(data || []);
+        if (data && data.length > 0) {
+          setMessage(`Loaded ${data.length} users successfully`);
+          setMessageType('success');
+        }
       }
     } catch (error: any) {
       console.error('Error in loadUsers:', error);
       setMessage('Error loading users: ' + error.message);
       setMessageType('error');
-    } finally {
-      setLoading(false);
     }
   };
 
