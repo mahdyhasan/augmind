@@ -1,7 +1,7 @@
-import React, { ReactNode } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import React, { ReactNode } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   Brain,
   Home,
@@ -18,33 +18,33 @@ import {
   Shield,
   UserPlus,
   Key,
-  Gauge
-} from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '../../lib/utils';
+  Gauge,
+} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "../../lib/utils";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 const adminNavigationItems = [
-  { name: 'Home', href: '/dashboard', icon: Home },
-  { name: 'AI Chat', href: '/chat', icon: MessageSquare },
-  { name: 'Document Uploads', href: '/uploads', icon: Upload },
-  { name: 'Competitor Insights', href: '/competitors', icon: TrendingUp },
-  { name: 'Client Intelligence', href: '/clients', icon: Users },
-  { name: 'USP & Vision', href: '/usp-vision', icon: Target },
-  { name: 'Preset Questions', href: '/preset-questions', icon: MessageCircle },
-  { name: 'Admin Panel', href: '/admin', icon: Shield },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Home", href: "/dashboard", icon: Home },
+  { name: "AI Chat", href: "/chat", icon: MessageSquare },
+  { name: "Document Uploads", href: "/uploads", icon: Upload },
+  { name: "Competitor Insights", href: "/competitors", icon: TrendingUp },
+  { name: "Client Intelligence", href: "/clients", icon: Users },
+  { name: "USP & Vision", href: "/usp-vision", icon: Target },
+  { name: "Preset Questions", href: "/preset-questions", icon: MessageCircle },
+  { name: "Admin Panel", href: "/admin", icon: Shield },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 const userNavigationItems = [
-  { name: 'Home', href: '/dashboard', icon: Home },
-  { name: 'AI Chat', href: '/chat', icon: MessageSquare },
-  { name: 'Client Prospect', href: '/client-prospect', icon: Users },
-  { name: 'My Uploads', href: '/uploads', icon: Upload },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Home", href: "/dashboard", icon: Home },
+  { name: "AI Chat", href: "/chat", icon: MessageSquare },
+  { name: "Client Prospect", href: "/client-prospect", icon: Users },
+  { name: "My Uploads", href: "/uploads", icon: Upload },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -52,15 +52,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
-  const navigationItems = user?.role === 'Admin' ? adminNavigationItems : userNavigationItems;
+  const navigationItems =
+    user?.role === "Admin" ? adminNavigationItems : userNavigationItems;
 
   return (
     <div className="h-screen flex bg-gray-50">
       {/* Sidebar */}
-      <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      )}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center px-6 py-4 border-b">
@@ -85,7 +88,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
                       ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-700 hover:bg-gray-100",
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -101,16 +104,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center space-x-3 mb-3">
               <Avatar>
                 <AvatarFallback className="bg-primary text-white">
-                  {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                  {user?.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("") || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.name}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {user?.role}
-                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.role}</p>
               </div>
             </div>
             <Button
@@ -128,7 +132,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Overlay for mobile */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
@@ -149,16 +153,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
               <h2 className="text-lg font-semibold text-gray-900">
-                {[...adminNavigationItems, ...userNavigationItems].find(item => item.href === location.pathname)?.name || 'Dashboard'}
+                {[...adminNavigationItems, ...userNavigationItems].find(
+                  (item) => item.href === location.pathname,
+                )?.name || "Dashboard"}
               </h2>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm">
                 <Bell className="h-5 w-5" />
               </Button>
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">Welcome, {user?.name}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  Welcome, {user?.name}
+                </p>
                 <p className="text-xs text-gray-500">{user?.role}</p>
               </div>
             </div>
@@ -166,9 +174,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
   );

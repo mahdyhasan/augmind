@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export interface User {
   username: string;
-  role: 'Admin' | 'Business Dev User';
+  role: "Admin" | "Business Dev User";
   name: string;
 }
 
@@ -18,7 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -32,29 +38,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('augmind-user');
+    const savedUser = localStorage.getItem("augmind-user");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
     // Mock authentication - in real app this would be an API call
     const mockUsers: { [key: string]: { password: string; user: User } } = {
-      'admin': {
-        password: 'admin123',
-        user: { username: 'admin', role: 'Admin', name: 'Administrator' }
+      admin: {
+        password: "admin123",
+        user: { username: "admin", role: "Admin", name: "Administrator" },
       },
-      'user1': {
-        password: 'user123',
-        user: { username: 'user1', role: 'Business Dev User', name: 'John Smith' }
-      }
+      user1: {
+        password: "user123",
+        user: {
+          username: "user1",
+          role: "Business Dev User",
+          name: "John Smith",
+        },
+      },
     };
 
     const userRecord = mockUsers[username];
     if (userRecord && userRecord.password === password) {
       setUser(userRecord.user);
-      localStorage.setItem('augmind-user', JSON.stringify(userRecord.user));
+      localStorage.setItem("augmind-user", JSON.stringify(userRecord.user));
       return true;
     }
     return false;
@@ -62,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('augmind-user');
+    localStorage.removeItem("augmind-user");
   };
 
   const value: AuthContextType = {

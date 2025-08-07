@@ -1,8 +1,14 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Construction, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Button } from "./ui/button";
+import { Construction, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface PlaceholderPageProps {
   title: string;
@@ -10,7 +16,11 @@ interface PlaceholderPageProps {
   comingSoon?: boolean;
 }
 
-export default function PlaceholderPage({ title, description, comingSoon = true }: PlaceholderPageProps) {
+export default function PlaceholderPage({
+  title,
+  description,
+  comingSoon = true,
+}: PlaceholderPageProps) {
   return (
     <div className="p-6 flex items-center justify-center min-h-full">
       <Card className="w-full max-w-md text-center">
@@ -19,15 +29,14 @@ export default function PlaceholderPage({ title, description, comingSoon = true 
             <Construction className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-xl">{title}</CardTitle>
-          <CardDescription className="text-base">
-            {description}
-          </CardDescription>
+          <CardDescription className="text-base">{description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {comingSoon && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
-                This feature is coming soon! Continue prompting to help build out this page.
+                This feature is coming soon! Continue prompting to help build
+                out this page.
               </p>
             </div>
           )}

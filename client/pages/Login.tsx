@@ -1,31 +1,37 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { Brain } from 'lucide-react';
+import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { Brain } from "lucide-react";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     try {
       const success = await login(username, password);
       if (!success) {
-        setError('Invalid username or password');
+        setError("Invalid username or password");
       }
     } catch (err) {
-      setError('An error occurred during login');
+      setError("An error occurred during login");
     } finally {
       setIsLoading(false);
     }
@@ -85,20 +91,26 @@ export default function Login() {
                 </Alert>
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-gray-600">
               <div className="mb-2">Demo Credentials:</div>
               <div className="space-y-1 text-xs">
-                <div>Admin: username: <code className="bg-gray-100 px-1 rounded">admin</code>, password: <code className="bg-gray-100 px-1 rounded">admin123</code></div>
-                <div>User: username: <code className="bg-gray-100 px-1 rounded">user1</code>, password: <code className="bg-gray-100 px-1 rounded">user123</code></div>
+                <div>
+                  Admin: username:{" "}
+                  <code className="bg-gray-100 px-1 rounded">admin</code>,
+                  password:{" "}
+                  <code className="bg-gray-100 px-1 rounded">admin123</code>
+                </div>
+                <div>
+                  User: username:{" "}
+                  <code className="bg-gray-100 px-1 rounded">user1</code>,
+                  password:{" "}
+                  <code className="bg-gray-100 px-1 rounded">user123</code>
+                </div>
               </div>
             </div>
           </CardContent>
