@@ -379,11 +379,16 @@ export default function Dashboard() {
           Your AI-powered strategic assistant is ready to help you make informed
           decisions.
         </p>
-        <div className="flex items-center text-sm text-blue-100">
-          <span className="mr-2">Role:</span>
-          <span className="bg-white/20 px-2 py-1 rounded-full">
-            {user?.role}
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm text-blue-100">
+            <span className="mr-2">Role:</span>
+            <span className="bg-white/20 px-2 py-1 rounded-full">
+              {user?.role}
+            </span>
+          </div>
+          <div>
+            <DataStatusIndicator />
+          </div>
         </div>
       </div>
 
