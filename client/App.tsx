@@ -20,23 +20,22 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Protected Route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
-};
-
-// Public Route component (redirect to dashboard if already logged in)
-const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
-  return !isAuthenticated ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/dashboard" replace />
-  );
-};
-
 function AppRoutes() {
+  // Protected Route component
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+    return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  };
+
+  // Public Route component (redirect to dashboard if already logged in)
+  const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated } = useAuth();
+    return !isAuthenticated ? (
+      <>{children}</>
+    ) : (
+      <Navigate to="/dashboard" replace />
+    );
+  };
   return (
     <Routes>
       {/* Public routes */}
