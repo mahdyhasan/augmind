@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { DataStatusIndicator } from "../components/DataStatusIndicator";
 
 interface DashboardStats {
   conversations: number;
