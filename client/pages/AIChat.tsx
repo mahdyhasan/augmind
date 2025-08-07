@@ -50,10 +50,78 @@ export default function AIChat() {
 
   useEffect(() => {
     if (user) {
-      loadPresetQuestions();
-      initializeConversation();
+      testConnection();
     }
   }, [user]);
+
+  const testConnection = async () => {
+    setConnectionStatus("testing");
+    try {
+      const { data, error } = await supabase
+        .from("preset_questions")
+        .select("count", { count: "exact", head: true });
+
+      if (error) throw error;
+
+      setConnectionStatus("connected");
+      setError("");
+      await loadPresetQuestions();
+      await initializeConversation();
+    } catch (error: any) {
+      console.error("Connection test failed:", error);
+      setConnectionStatus("disconnected");
+      setError("Unable to connect to the database. Using offline mode.");
+
+      // Load demo preset questions for offline mode
+      setPresetQuestions([
+        {
+          id: "demo-1",
+          title: "Market Analysis",
+          prompt: "Can you provide a comprehensive market analysis for my industry?",
+          category: "Strategy",
+          description: "Get insights on market trends and opportunities",
+          is_active: true,
+          usage_count: 0,
+          created_by: user?.id || "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "demo-2",
+          title: "Competitive Strategy",
+          prompt: "Help me develop a competitive strategy against my main competitors",
+          category: "Competition",
+          description: "Analyze competitive landscape and positioning",
+          is_active: true,
+          usage_count: 0,
+          created_by: user?.id || "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          id: "demo-3",
+          title: "Growth Planning",
+          prompt: "What are the best growth strategies for my business?",
+          category: "Growth",
+          description: "Develop strategic growth initiatives",
+          is_active: true,
+          usage_count: 0,
+          created_by: user?.id || "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+      ]);
+
+      // Initialize offline conversation
+      const welcomeMessage: ChatMessage = {
+        id: "offline-1",
+        content: `Hello ${user?.name}! I'm your AI strategic assistant. I'm currently running in offline mode, but I can still help you with business strategy, market analysis, and competitive insights. How can I assist you today?`,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      setMessages([welcomeMessage]);
+    }
+  };
 
   const loadPresetQuestions = async () => {
     try {
