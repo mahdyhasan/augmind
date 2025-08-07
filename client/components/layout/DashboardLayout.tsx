@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { 
+import {
   Brain,
   Home,
   MessageSquare,
@@ -14,7 +14,11 @@ import {
   Settings,
   LogOut,
   Menu,
-  Bell
+  Bell,
+  Shield,
+  UserPlus,
+  Key,
+  Gauge
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
