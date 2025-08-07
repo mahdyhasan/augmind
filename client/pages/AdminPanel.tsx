@@ -289,23 +289,6 @@ export default function AdminPanel() {
     }
   };
 
-  const loadDemoSystemSettings = () => {
-    const demoSettings: SystemSettings = {
-      default_user_tokens: 5000,
-      default_user_words: 1000,
-      max_tokens_per_request: 2000,
-      max_words_per_response: 500,
-      daily_request_limit: 100,
-      openai_api_key: "sk-demo-key-*********************",
-      serper_api_key: "demo-serper-key-**************",
-      anthropic_api_key: "demo-anthropic-key-***********",
-    };
-
-    setSystemSettings(demoSettings);
-    setMessage("Demo mode: Loaded demo system settings");
-    setMessageType("success");
-    console.log("Demo system settings loaded:", demoSettings);
-  };
 
   const handleCreateUser = async () => {
     if (
