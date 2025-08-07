@@ -257,8 +257,9 @@ export default function AdminPanel() {
     try {
       setLoading(true);
       setMessage('');
+      console.log('Updating system settings...');
 
-      // Update each setting
+      // Update each setting using upsert
       const updates = [
         { key: 'default_user_tokens', value: systemSettings.default_user_tokens },
         { key: 'default_user_words', value: systemSettings.default_user_words },
@@ -271,20 +272,28 @@ export default function AdminPanel() {
       ];
 
       for (const update of updates) {
+        console.log(`Updating ${update.key} with value:`, update.value);
+
         const { error } = await supabase
           .from('system_settings')
-          .update({ 
+          .upsert({
+            setting_key: update.key,
             setting_value: JSON.stringify(update.value),
+            description: `System setting for ${update.key}`,
             updated_at: new Date().toISOString()
-          })
-          .eq('setting_key', update.key);
+          }, {
+            onConflict: 'setting_key'
+          });
 
         if (error) {
           console.error(`Error updating ${update.key}:`, error);
           throw error;
+        } else {
+          console.log(`Successfully updated ${update.key}`);
         }
       }
 
+      console.log('All settings updated successfully');
       setMessage('System settings updated successfully!');
       setMessageType('success');
     } catch (error: any) {
