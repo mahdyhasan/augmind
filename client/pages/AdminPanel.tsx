@@ -392,17 +392,64 @@ export default function AdminPanel() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+  const handleEditUser = (userProfile: UserProfile) => {
+    setEditingUser(userProfile);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEditUser = async () => {
+    if (!editingUser) return;
 
     try {
       setLoading(true);
+      setMessage("");
+
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({
+          username: editingUser.username,
+          full_name: editingUser.full_name,
+          role: editingUser.role,
+          token_limit: editingUser.token_limit,
+          word_limit: editingUser.word_limit,
+          status: editingUser.status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editingUser.id);
+
+      if (error) {
+        console.error("Error updating user:", error);
+        setMessage("Error updating user: " + error.message);
+        setMessageType("error");
+      } else {
+        setMessage("User updated successfully");
+        setMessageType("success");
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+        await loadUsers();
+      }
+    } catch (error: any) {
+      console.error("Error in handleSaveEditUser:", error);
+      setMessage("Error updating user: " + error.message);
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showDeleteConfirmation = (userProfile: UserProfile) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete User",
+      message: `Are you sure you want to delete "${userProfile.full_name}"? This action cannot be undone and will remove all associated data.`,
+      onConfirm: () => handleDeleteUser(userProfile.id),
+    });
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      setLoading(true);
+      setConfirmDialog({ ...confirmDialog, isOpen: false });
 
       // Delete user profile (this will cascade to related data due to foreign keys)
       const { error } = await supabase
