@@ -35,13 +35,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         signal: AbortSignal.timeout(10000), // 10 second timeout
       }).catch(error => {
         console.error('Supabase fetch error:', error);
-        // Convert network errors to more user-friendly messages
-        if (error.name === 'TimeoutError') {
-          throw new Error('Request timeout - please check your internet connection');
-        }
-        if (error.message.includes('Failed to fetch')) {
-          throw new Error('Network connection failed - please check your internet connection');
-        }
+        // Just re-throw the original error to let the auth context handle it
         throw error;
       });
     },
