@@ -87,51 +87,7 @@ export default function Uploads() {
   const [loading, setLoading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connected" | "disconnected" | "testing">("testing");
 
-  const [files, setFiles] = useState<UploadedFile[]>([
-    {
-      id: "1",
-      name: "competitor-analysis-q4.pdf",
-      size: 2458000,
-      type: "application/pdf",
-      category: "Competitors",
-      uploadedBy: "Administrator",
-      uploadedAt: new Date("2024-01-15"),
-      status: "Complete",
-      description: "Q4 competitive landscape analysis",
-    },
-    {
-      id: "2",
-      name: "client-feedback-summary.txt",
-      size: 156000,
-      type: "text/plain",
-      category: "Clients",
-      uploadedBy: "John Smith",
-      uploadedAt: new Date("2024-01-20"),
-      status: "Complete",
-      description: "Summary of client feedback from recent surveys",
-    },
-    {
-      id: "3",
-      name: "vision-statement-draft.md",
-      size: 45000,
-      type: "text/markdown",
-      category: "USP & Vision",
-      uploadedBy: "Administrator",
-      uploadedAt: new Date("2024-01-22"),
-      status: "Processing",
-    },
-    {
-      id: "4",
-      name: "prospect-research-techcorp.pdf",
-      size: 1200000,
-      type: "application/pdf",
-      category: "Prospect Information",
-      uploadedBy: "John Smith",
-      uploadedAt: new Date("2024-01-25"),
-      status: "Complete",
-      description: "Research on TechCorp prospect",
-    },
-  ]);
+  const [files, setFiles] = useState<UploadedFile[]>([]);
 
   const categories = isAdmin ? adminCategories : userCategories;
 
