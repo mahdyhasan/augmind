@@ -217,8 +217,8 @@ export default function AdminPanel() {
     } catch (error: any) {
       const errorMsg = error?.message || error?.toString() || "Network error";
       console.error("Error in loadUsers:", errorMsg);
-      console.log("Network error, switching to demo data for users");
-      loadDemoUsers();
+      setMessage("Network error loading users: " + errorMsg);
+      setMessageType("error");
     } finally {
       setLoading(false);
     }
