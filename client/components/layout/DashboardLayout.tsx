@@ -27,14 +27,23 @@ interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-const navigationItems = [
+const adminNavigationItems = [
   { name: 'Home', href: '/dashboard', icon: Home },
   { name: 'AI Chat', href: '/chat', icon: MessageSquare },
-  { name: 'Uploads', href: '/uploads', icon: Upload },
+  { name: 'Document Uploads', href: '/uploads', icon: Upload },
   { name: 'Competitor Insights', href: '/competitors', icon: TrendingUp },
   { name: 'Client Intelligence', href: '/clients', icon: Users },
   { name: 'USP & Vision', href: '/usp-vision', icon: Target },
-  { name: 'Preset Prompts', href: '/prompts', icon: MessageCircle },
+  { name: 'Preset Questions', href: '/preset-questions', icon: MessageCircle },
+  { name: 'Admin Panel', href: '/admin', icon: Shield },
+  { name: 'Settings', href: '/settings', icon: Settings },
+];
+
+const userNavigationItems = [
+  { name: 'Home', href: '/dashboard', icon: Home },
+  { name: 'AI Chat', href: '/chat', icon: MessageSquare },
+  { name: 'Client Prospect', href: '/client-prospect', icon: Users },
+  { name: 'My Uploads', href: '/uploads', icon: Upload },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
