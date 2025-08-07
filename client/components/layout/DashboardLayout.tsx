@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {filteredNavigation.map((item) => {
+            {navigationItems.map((item) => {
               const isActive = location.pathname === item.href;
               return (
                 <Link
