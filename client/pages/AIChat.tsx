@@ -192,7 +192,7 @@ export default function AIChat() {
     content: string,
     presetQuestionId?: string,
   ) => {
-    if (!content.trim() || !user || !currentConversation) return;
+    if (!content.trim() || !user) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
