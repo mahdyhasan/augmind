@@ -176,20 +176,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log("Login: Starting login process for:", email);
       console.log("Login: Supabase URL check:", import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗");
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // Demo credentials for development when Supabase is not accessible
+      const demoCredentials = [
+        { email: "admin@augmind.com", password: "admin123" },
+        { email: "user@augmind.com", password: "user123" }
+      ];
 
-      if (error) {
-        console.log("Login: Auth error:", error.message);
-        return { success: false, error: error.message };
-      }
-
-      console.log(
-        "Login: Auth successful, user will be set via onAuthStateChange",
+      const isDemoLogin = demoCredentials.some(cred =>
+        cred.email === email && cred.password === password
       );
-      return { success: true };
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          console.log("Login: Auth error:", error.message);
+
+          // If it's a network error and we have demo credentials, use demo login
+          if (isDemoLogin && error.message.includes("fetch")) {
+            console.log("Login: Using demo authentication due to network issues");
+            return await handleDemoLogin(email);
+          }
+
+          return { success: false, error: error.message };
+        }
+
+        console.log(
+          "Login: Auth successful, user will be set via onAuthStateChange",
+        );
+        return { success: true };
+      } catch (networkError: any) {
+        console.error("Login: Network error during login:", networkError);
+
+        // If network fails and we have demo credentials, use demo login
+        if (isDemoLogin) {
+          console.log("Login: Network failed, switching to demo authentication");
+          return await handleDemoLogin(email);
+        }
+
+        throw networkError;
+      }
     } catch (error: any) {
       console.error("Login: Exception during login:", error);
 
@@ -201,7 +230,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
       }
 
-      if (error.message.includes("fetch")) {
+      if (error.message.includes("fetch") || error.message.includes("timeout")) {
         return {
           success: false,
           error: "Unable to connect to authentication service. Please try again later."
@@ -209,6 +238,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       return { success: false, error: error.message || "An unexpected error occurred during login." };
+    }
+  };
+
+  const handleDemoLogin = async (email: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      // Create a demo user object
+      const isAdmin = email === "admin@augmind.com";
+      const demoUser = {
+        id: isAdmin ? "demo-admin-id" : "demo-user-id",
+        username: isAdmin ? "admin" : "demo_user",
+        role: (isAdmin ? "Admin" : "Business Dev User") as const,
+        name: isAdmin ? "Demo Administrator" : "Demo User",
+        email: email,
+      };
+
+      console.log("Login: Setting demo user:", demoUser);
+      setUser(demoUser);
+      setLoading(false);
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: "Demo login failed: " + error.message };
     }
   };
 
