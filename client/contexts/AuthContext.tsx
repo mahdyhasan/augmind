@@ -173,53 +173,63 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     email: string,
     password: string,
   ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      console.log("Login: Starting login process for:", email);
-      console.log("Login: Supabase URL check:", import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗");
+    console.log("Login: Starting login process for:", email);
+    console.log("Login: Supabase URL check:", import.meta.env.VITE_SUPABASE_URL ? "✓" : "✗");
 
-      // Demo credentials for development when Supabase is not accessible
-      const demoCredentials = [
-        { email: "admin@augmind.com", password: "admin123" },
-        { email: "user@augmind.com", password: "user123" }
-      ];
+    // Demo credentials for development when Supabase is not accessible
+    const demoCredentials = [
+      { email: "admin@augmind.com", password: "admin123" },
+      { email: "user@augmind.com", password: "user123" }
+    ];
 
-      const isDemoLogin = demoCredentials.some(cred =>
-        cred.email === email && cred.password === password
-      );
+    const isDemoLogin = demoCredentials.some(cred =>
+      cred.email === email && cred.password === password
+    );
 
+    // If using demo credentials, try Supabase first but fallback to demo quickly
+    if (isDemoLogin) {
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        console.log("Login: Attempting Supabase auth for demo user...");
+
+        // Create a promise that rejects quickly for demo users if network fails
+        const authPromise = supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) {
-          console.log("Login: Auth error:", error.message);
-
-          // If it's a network error and we have demo credentials, use demo login
-          if (isDemoLogin && error.message.includes("fetch")) {
-            console.log("Login: Using demo authentication due to network issues");
-            return await handleDemoLogin(email);
-          }
-
-          return { success: false, error: error.message };
-        }
-
-        console.log(
-          "Login: Auth successful, user will be set via onAuthStateChange",
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Demo mode: Quick timeout')), 3000)
         );
-        return { success: true };
-      } catch (networkError: any) {
-        console.error("Login: Network error during login:", networkError);
 
-        // If network fails and we have demo credentials, use demo login
-        if (isDemoLogin) {
-          console.log("Login: Network failed, switching to demo authentication");
+        const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
+
+        if (error) {
+          console.log("Login: Supabase auth failed for demo user, switching to demo mode");
           return await handleDemoLogin(email);
         }
 
-        throw networkError;
+        console.log("Login: Supabase auth successful for demo user");
+        return { success: true };
+      } catch (error: any) {
+        console.log("Login: Network/timeout error for demo user, using demo mode:", error.message);
+        return await handleDemoLogin(email);
       }
+    }
+
+    // For non-demo credentials, use normal Supabase authentication
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.log("Login: Auth error:", error.message);
+        return { success: false, error: error.message };
+      }
+
+      console.log("Login: Auth successful, user will be set via onAuthStateChange");
+      return { success: true };
     } catch (error: any) {
       console.error("Login: Exception during login:", error);
 
@@ -231,7 +241,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         };
       }
 
-      if (error.message.includes("fetch") || error.message.includes("timeout")) {
+      if (error.message.includes("fetch") || error.message.includes("timeout") || error.message.includes("connection")) {
         return {
           success: false,
           error: "Unable to connect to authentication service. Please try again later."
