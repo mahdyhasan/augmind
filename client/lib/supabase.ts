@@ -24,6 +24,7 @@ try {
   throw new Error("Invalid Supabase URL format");
 }
 
+// Create a more robust Supabase client with better error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -31,13 +32,31 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
   global: {
     fetch: (url, options = {}) => {
+      // Create a timeout controller
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const combinedSignal = options.signal
+        ? AbortSignal.any([options.signal, controller.signal])
+        : controller.signal;
+
       return fetch(url, {
         ...options,
-        // Add timeout to prevent hanging
-        signal: AbortSignal.timeout(10000), // 10 second timeout
+        signal: combinedSignal,
+      }).then(response => {
+        clearTimeout(timeoutId);
+        return response;
       }).catch((error) => {
+        clearTimeout(timeoutId);
         console.error("Supabase fetch error:", error);
-        // Just re-throw the original error to let the auth context handle it
+
+        // Check if it's a network connectivity issue
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          console.warn("Network connectivity issue detected. Application will run in offline mode.");
+          isSupabaseConnected = false;
+        }
+
+        // Re-throw to let the calling code handle it
         throw error;
       });
     },
