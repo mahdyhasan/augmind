@@ -43,22 +43,29 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       return fetch(url, {
         ...options,
         signal: combinedSignal,
-      }).then(response => {
-        clearTimeout(timeoutId);
-        return response;
-      }).catch((error) => {
-        clearTimeout(timeoutId);
-        console.error("Supabase fetch error:", error);
+      })
+        .then((response) => {
+          clearTimeout(timeoutId);
+          return response;
+        })
+        .catch((error) => {
+          clearTimeout(timeoutId);
+          console.error("Supabase fetch error:", error);
 
-        // Check if it's a network connectivity issue
-        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-          console.warn("Network connectivity issue detected. Application will run in offline mode.");
-          isSupabaseConnected = false;
-        }
+          // Check if it's a network connectivity issue
+          if (
+            error.name === "TypeError" &&
+            error.message.includes("Failed to fetch")
+          ) {
+            console.warn(
+              "Network connectivity issue detected. Application will run in offline mode.",
+            );
+            isSupabaseConnected = false;
+          }
 
-        // Re-throw to let the calling code handle it
-        throw error;
-      });
+          // Re-throw to let the calling code handle it
+          throw error;
+        });
     },
   },
 });
@@ -82,15 +89,21 @@ export const testSupabaseConnection = async (): Promise<boolean> => {
     console.log("✅ Supabase connection successful");
     isSupabaseConnected = true;
     return true;
-
   } catch (error) {
     console.warn("Supabase connection test failed:", error);
 
     // Provide specific error guidance
-    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-      console.error("❌ Network connectivity issue - Check your Supabase URL and internet connection");
-    } else if (error.message?.includes('Invalid API key')) {
-      console.error("❌ Invalid Supabase credentials - Check your VITE_SUPABASE_ANON_KEY");
+    if (
+      error instanceof TypeError &&
+      error.message.includes("Failed to fetch")
+    ) {
+      console.error(
+        "❌ Network connectivity issue - Check your Supabase URL and internet connection",
+      );
+    } else if (error.message?.includes("Invalid API key")) {
+      console.error(
+        "❌ Invalid Supabase credentials - Check your VITE_SUPABASE_ANON_KEY",
+      );
     } else {
       console.error("❌ Supabase connection failed:", error.message);
     }

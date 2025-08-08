@@ -1,34 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Badge } from "./ui/badge";
-import { 
-  AlertCircle, 
-  CheckCircle, 
-  ExternalLink, 
+import {
+  AlertCircle,
+  CheckCircle,
+  ExternalLink,
   RefreshCw,
   Database,
   XCircle,
-  Info
+  Info,
 } from "lucide-react";
 import { testSupabaseConnection } from "../lib/supabase";
 
 export const ConnectionSetup: React.FC = () => {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<"testing" | "connected" | "failed">("testing");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "testing" | "connected" | "failed"
+  >("testing");
   const [lastTestTime, setLastTestTime] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const testConnection = async () => {
     setIsTestingConnection(true);
     setError(null);
-    
+
     try {
       const isConnected = await testSupabaseConnection();
       setConnectionStatus(isConnected ? "connected" : "failed");
       if (!isConnected) {
-        setError("Failed to connect to Supabase. Please check your configuration.");
+        setError(
+          "Failed to connect to Supabase. Please check your configuration.",
+        );
       }
     } catch (err: any) {
       setConnectionStatus("failed");
@@ -45,7 +55,7 @@ export const ConnectionSetup: React.FC = () => {
 
   const envVars = {
     url: import.meta.env.VITE_SUPABASE_URL,
-    key: import.meta.env.VITE_SUPABASE_ANON_KEY
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY,
   };
 
   return (
@@ -58,17 +68,29 @@ export const ConnectionSetup: React.FC = () => {
               <Database className="h-5 w-5" />
               <CardTitle>Database Connection</CardTitle>
             </div>
-            <Badge 
+            <Badge
               variant={
-                connectionStatus === "connected" ? "default" :
-                connectionStatus === "testing" ? "secondary" : "destructive"
+                connectionStatus === "connected"
+                  ? "default"
+                  : connectionStatus === "testing"
+                    ? "secondary"
+                    : "destructive"
               }
             >
-              {connectionStatus === "connected" && <CheckCircle className="h-3 w-3 mr-1" />}
-              {connectionStatus === "failed" && <XCircle className="h-3 w-3 mr-1" />}
-              {connectionStatus === "testing" && <RefreshCw className="h-3 w-3 mr-1 animate-spin" />}
-              {connectionStatus === "connected" ? "Connected" :
-               connectionStatus === "testing" ? "Testing..." : "Disconnected"}
+              {connectionStatus === "connected" && (
+                <CheckCircle className="h-3 w-3 mr-1" />
+              )}
+              {connectionStatus === "failed" && (
+                <XCircle className="h-3 w-3 mr-1" />
+              )}
+              {connectionStatus === "testing" && (
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+              )}
+              {connectionStatus === "connected"
+                ? "Connected"
+                : connectionStatus === "testing"
+                  ? "Testing..."
+                  : "Disconnected"}
             </Badge>
           </div>
           <CardDescription>
@@ -80,24 +102,43 @@ export const ConnectionSetup: React.FC = () => {
           <div className="space-y-2">
             <h4 className="font-medium">Environment Variables</h4>
             <div className="space-y-1 text-sm">
-              <div className={`flex items-center space-x-2 ${envVars.url ? 'text-green-600' : 'text-red-600'}`}>
-                {envVars.url ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                <span>VITE_SUPABASE_URL: {envVars.url ? 'Configured' : 'Missing'}</span>
+              <div
+                className={`flex items-center space-x-2 ${envVars.url ? "text-green-600" : "text-red-600"}`}
+              >
+                {envVars.url ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                <span>
+                  VITE_SUPABASE_URL: {envVars.url ? "Configured" : "Missing"}
+                </span>
               </div>
-              <div className={`flex items-center space-x-2 ${envVars.key ? 'text-green-600' : 'text-red-600'}`}>
-                {envVars.key ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                <span>VITE_SUPABASE_ANON_KEY: {envVars.key ? 'Configured' : 'Missing'}</span>
+              <div
+                className={`flex items-center space-x-2 ${envVars.key ? "text-green-600" : "text-red-600"}`}
+              >
+                {envVars.key ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
+                <span>
+                  VITE_SUPABASE_ANON_KEY:{" "}
+                  {envVars.key ? "Configured" : "Missing"}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Test Connection Button */}
-          <Button 
-            onClick={testConnection} 
+          <Button
+            onClick={testConnection}
             disabled={isTestingConnection}
             className="w-full"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isTestingConnection ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isTestingConnection ? "animate-spin" : ""}`}
+            />
             Test Connection
           </Button>
 
@@ -133,15 +174,19 @@ export const ConnectionSetup: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">1. Get Supabase Credentials</h4>
+                <h4 className="font-medium mb-2">
+                  1. Get Supabase Credentials
+                </h4>
                 <div className="space-y-2">
                   <p className="text-sm text-gray-600">
                     Create a new Supabase project or access your existing one:
                   </p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    onClick={() => window.open('https://supabase.com/dashboard', '_blank')}
+                    onClick={() =>
+                      window.open("https://supabase.com/dashboard", "_blank")
+                    }
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Open Supabase Dashboard
@@ -162,9 +207,12 @@ export const ConnectionSetup: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">3. Update Environment Variables</h4>
+                <h4 className="font-medium mb-2">
+                  3. Update Environment Variables
+                </h4>
                 <p className="text-sm text-gray-600 mb-2">
-                  Contact your administrator to update these environment variables:
+                  Contact your administrator to update these environment
+                  variables:
                 </p>
                 <div className="bg-gray-50 p-3 rounded text-sm font-mono">
                   <div>VITE_SUPABASE_URL=https://your-project.supabase.co</div>
@@ -175,8 +223,8 @@ export const ConnectionSetup: React.FC = () => {
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  After updating the environment variables, the application will need to be restarted 
-                  to apply the new configuration.
+                  After updating the environment variables, the application will
+                  need to be restarted to apply the new configuration.
                 </AlertDescription>
               </Alert>
             </div>
