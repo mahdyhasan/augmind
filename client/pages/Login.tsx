@@ -208,7 +208,7 @@ export default function Login() {
         </Card>
 
         <div className="mt-6">
-          <DatabaseStatus />
+          <ConnectionSetup />
         </div>
       </div>
     </div>
