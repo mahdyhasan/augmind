@@ -68,13 +68,33 @@ export let isSupabaseConnected = true;
 
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
+    // First test basic connectivity
     const { data, error } = await supabase
       .from("user_profiles")
       .select("count", { count: "exact", head: true });
-    isSupabaseConnected = !error;
-    return !error;
+
+    if (error) {
+      console.warn("Supabase query error:", error.message);
+      isSupabaseConnected = false;
+      return false;
+    }
+
+    console.log("✅ Supabase connection successful");
+    isSupabaseConnected = true;
+    return true;
+
   } catch (error) {
     console.warn("Supabase connection test failed:", error);
+
+    // Provide specific error guidance
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      console.error("❌ Network connectivity issue - Check your Supabase URL and internet connection");
+    } else if (error.message?.includes('Invalid API key')) {
+      console.error("❌ Invalid Supabase credentials - Check your VITE_SUPABASE_ANON_KEY");
+    } else {
+      console.error("❌ Supabase connection failed:", error.message);
+    }
+
     isSupabaseConnected = false;
     return false;
   }
