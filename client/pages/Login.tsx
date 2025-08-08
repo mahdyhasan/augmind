@@ -13,6 +13,8 @@ import {
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Brain } from "lucide-react";
 import { DatabaseStatus } from "../components/DatabaseStatus";
+import { ConnectionSetup } from "../components/ConnectionSetup";
+import { isSupabaseConnected } from "../lib/supabase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
