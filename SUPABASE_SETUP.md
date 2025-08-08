@@ -1,11 +1,13 @@
 # Supabase Setup Instructions
 
 ## Current Issue
+
 The application is failing to connect to Supabase with "Failed to fetch" errors because the configured Supabase URL is not reachable.
 
 ## Required Steps
 
 ### 1. Get Valid Supabase Credentials
+
 1. Visit [supabase.com](https://supabase.com)
 2. Sign in and create a new project (or access existing)
 3. Go to Settings → API in your project dashboard
@@ -14,6 +16,7 @@ The application is failing to connect to Supabase with "Failed to fetch" errors 
    - **anon/public key** (long string starting with eyJ...)
 
 ### 2. Update Environment Variables
+
 Use the DevServerControl tool or update deployment settings with:
 
 ```
@@ -22,7 +25,9 @@ VITE_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 ### 3. Setup Database Schema
+
 Once connected, you'll need to create the required tables:
+
 - user_profiles
 - messages
 - conversations
@@ -33,15 +38,18 @@ Once connected, you'll need to create the required tables:
 - system_settings
 
 ### 4. Enable Row Level Security (RLS)
+
 Make sure RLS is enabled on all tables for proper security.
 
 ## Current Status
+
 - ❌ Supabase URL not reachable
 - ❌ Database connection failing
 - ❌ Authentication not working
 - ❌ File uploads not working
 
 ## After Fix
+
 - ✅ Database connectivity restored
 - ✅ Authentication working
 - ✅ All admin panel functions working
