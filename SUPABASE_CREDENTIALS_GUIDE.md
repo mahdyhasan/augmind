@@ -15,11 +15,13 @@
 3. You'll see two important values:
 
 ### Project URL
-- Look for "Project URL" 
+
+- Look for "Project URL"
 - Example: `https://abcd1234efgh5678.supabase.co`
 - This becomes your `VITE_SUPABASE_URL`
 
 ### API Keys
+
 - Look for "Project API keys"
 - Copy the **anon/public** key (NOT the secret key)
 - Example: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (very long string)
@@ -28,13 +30,16 @@
 ## Step 3: Set Environment Variables
 
 ### For Development (Builder.io):
+
 Use the DevServerControl tool:
+
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-very-long-anon-key-here
 ```
 
 ### For Netlify Deployment:
+
 1. Go to your Netlify dashboard
 2. Select your site
 3. Go to Site settings → Environment variables
@@ -70,6 +75,7 @@ create table if not exists public.user_profiles (
 ```
 
 ## Common Issues:
+
 - **Framework selection**: Ignore it - just get the URL and API key
 - **Secret vs Anon key**: Use the anon/public key, NOT the secret key
 - **Environment variables**: Must start with `VITE_` for client-side access
